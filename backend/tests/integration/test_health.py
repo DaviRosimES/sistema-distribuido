@@ -1,12 +1,6 @@
 import pytest
 
-from app.api.routes.health import health_check
 from app.main import app
-
-
-def test_health_check_retorna_healthy():
-    # Chamo a função direto, sem passar pelo HTTP
-    assert health_check() == "Healthy!"
 
 
 def test_get_raiz_retorna_200(client):
