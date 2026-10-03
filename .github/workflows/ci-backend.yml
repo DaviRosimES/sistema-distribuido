@@ -1,0 +1,31 @@
+name: CI Backend
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configura o Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instala o Poetry
+        run: pip install poetry==2.4.1
+
+      - name: Instala as dependências
+        run: poetry install --no-root
+
+      - name: Executa os testes
+        run: poetry run pytest -v
