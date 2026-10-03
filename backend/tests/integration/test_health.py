@@ -1,11 +1,6 @@
 import pytest
 
-from app.main import app, health_check
-
-
-def test_health_check_retorna_healthy():
-    # Chamo a função direto, sem passar pelo HTTP
-    assert health_check() == "Healthy!"
+from app.main import app
 
 
 def test_get_raiz_retorna_200(client):
@@ -27,7 +22,8 @@ def test_get_raiz_retorna_json(client):
 
 
 def test_rota_health_check_esta_registrada():
-    rotas = {route.path for route in app.routes}
+    # Com o include_router o app.routes não expõe mais o path direto, então olho pelo schema OpenAPI
+    rotas = app.openapi()["paths"]
 
     assert "/" in rotas
 

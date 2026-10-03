@@ -27,5 +27,10 @@ jobs:
       - name: Instala as dependências
         run: poetry install --no-root
 
-      - name: Executa os testes
-        run: poetry run pytest -v
+      - name: Executa os testes unitários
+        run: poetry run pytest -v tests/unit
+
+      # Roda mesmo se os unitários falharem, pra ver no mesmo run se a integração também quebrou
+      - name: Executa os testes de integração
+        if: ${{ !cancelled() }}
+        run: poetry run pytest -v tests/integration
