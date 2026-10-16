@@ -1,5 +1,8 @@
+from typing import Any
+
+from app.models.tarefa import TarefaModel
 from app.repositories.tarefa_repository import TarefaRepository
-from app.schemas.tarefa import Tarefa, TarefaCreate, TarefaPatch, TarefaUpdate
+from app.schemas.tarefa import TarefaCreate, TarefaPatch, TarefaUpdate
 
 
 class TarefaNaoEncontradaError(Exception):
@@ -12,31 +15,32 @@ class TarefaService:
     def __init__(self, repository: TarefaRepository):
         self.repository = repository
 
-    def listar(self, concluida: bool | None = None) -> list[Tarefa]:
-        tarefas = self.repository.listar()
-        if concluida is None:
-            return tarefas
-        return [tarefa for tarefa in tarefas if tarefa.concluida == concluida]
+    def listar(self, concluida: bool | None = None) -> list[TarefaModel]:
+        return self.repository.listar(concluida)
 
-    def buscar(self, tarefa_id: int) -> Tarefa:
+    def buscar(self, tarefa_id: int) -> TarefaModel:
         tarefa = self.repository.buscar(tarefa_id)
         if tarefa is None:
             raise TarefaNaoEncontradaError(tarefa_id)
         return tarefa
 
-    def criar(self, dados: TarefaCreate) -> Tarefa:
-        return self.repository.criar(dados.model_dump())
+    def criar(self, dados: TarefaCreate) -> TarefaModel:
+        # É aqui que o schema da API vira o modelo do banco
+        return self.repository.salvar(TarefaModel(**dados.model_dump()))
 
-    def substituir(self, tarefa_id: int, dados: TarefaUpdate) -> Tarefa:
-        self.buscar(tarefa_id)
-        return self.repository.salvar(Tarefa(id=tarefa_id, **dados.model_dump()))
+    def substituir(self, tarefa_id: int, dados: TarefaUpdate) -> TarefaModel:
+        tarefa = self.buscar(tarefa_id)
+        return self._aplicar(tarefa, dados.model_dump())
 
-    def atualizar_parcial(self, tarefa_id: int, dados: TarefaPatch) -> Tarefa:
+    def atualizar_parcial(self, tarefa_id: int, dados: TarefaPatch) -> TarefaModel:
         tarefa = self.buscar(tarefa_id)
         # exclude_unset garante que só os campos enviados no body sejam alterados
-        alteracoes = dados.model_dump(exclude_unset=True)
-        return self.repository.salvar(tarefa.model_copy(update=alteracoes))
+        return self._aplicar(tarefa, dados.model_dump(exclude_unset=True))
 
     def remover(self, tarefa_id: int) -> None:
-        if not self.repository.remover(tarefa_id):
-            raise TarefaNaoEncontradaError(tarefa_id)
+        self.repository.remover(self.buscar(tarefa_id))
+
+    def _aplicar(self, tarefa: TarefaModel, alteracoes: dict[str, Any]) -> TarefaModel:
+        for campo, valor in alteracoes.items():
+            setattr(tarefa, campo, valor)
+        return self.repository.salvar(tarefa)
