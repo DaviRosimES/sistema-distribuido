@@ -1,4 +1,18 @@
 services:
+  # Roda as migrations uma vez e termina. O backend só sobe depois que ele terminar com sucesso,
+  # assim a API nunca começa com o banco desatualizado.
+  migrate:
+    build:
+      context: ./backend
+    command: ["poetry", "run", "alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-sistema_distribuido}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
   backend:
     build:
       context: ./backend
@@ -9,6 +23,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     networks:
       - app-network
 
