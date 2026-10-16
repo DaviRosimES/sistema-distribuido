@@ -14,6 +14,7 @@ from app.repositories.tarefa_repository import TarefaRepository
 # Sem TEST_DATABASE_URL os testes usam SQLite em memória, assim o make test roda
 # sem precisar subir o Postgres.
 # No CI a variável aponta pro Postgres do workflow, então lá os testes rodam no banco de verdade.
+# Atenção: os testes apagam as tabelas no final, então use um banco só pra testes.
 TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "sqlite+pysqlite:///:memory:")
 
 
