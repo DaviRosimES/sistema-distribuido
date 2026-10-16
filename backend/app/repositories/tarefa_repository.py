@@ -2,7 +2,8 @@ from app.schemas.tarefa import Tarefa
 
 
 class TarefaRepository:
-    # Por enquanto os dados ficam em memória, depois dá pra trocar pelo Postgres sem mexer nas outras camadas
+    # Por enquanto os dados ficam em memória, depois dá pra trocar pelo Postgres
+    # sem mexer nas outras camadas
     def __init__(self):
         self._tarefas: dict[int, Tarefa] = {}
         self._proximo_id = 1

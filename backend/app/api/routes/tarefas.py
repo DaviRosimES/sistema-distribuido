@@ -29,7 +29,7 @@ def buscar_tarefa(tarefa_id: TarefaId, service: ServiceDep):
     try:
         return service.buscar(tarefa_id)
     except TarefaNaoEncontradaError as erro:
-        raise _nao_encontrada(erro)
+        raise _nao_encontrada(erro) from erro
 
 
 @router.post("", response_model=Tarefa, status_code=status.HTTP_201_CREATED)
@@ -42,7 +42,7 @@ def substituir_tarefa(tarefa_id: TarefaId, dados: TarefaUpdate, service: Service
     try:
         return service.substituir(tarefa_id, dados)
     except TarefaNaoEncontradaError as erro:
-        raise _nao_encontrada(erro)
+        raise _nao_encontrada(erro) from erro
 
 
 @router.patch("/{tarefa_id}", response_model=Tarefa)
@@ -50,7 +50,7 @@ def atualizar_tarefa(tarefa_id: TarefaId, dados: TarefaPatch, service: ServiceDe
     try:
         return service.atualizar_parcial(tarefa_id, dados)
     except TarefaNaoEncontradaError as erro:
-        raise _nao_encontrada(erro)
+        raise _nao_encontrada(erro) from erro
 
 
 @router.delete("/{tarefa_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -58,4 +58,4 @@ def remover_tarefa(tarefa_id: TarefaId, service: ServiceDep):
     try:
         service.remover(tarefa_id)
     except TarefaNaoEncontradaError as erro:
-        raise _nao_encontrada(erro)
+        raise _nao_encontrada(erro) from erro
