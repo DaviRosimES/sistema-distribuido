@@ -6,7 +6,7 @@ HOST := 0.0.0.0
 PORT := 8000
 DOCKER_COMPOSE := docker compose
 
-.PHONY: install run test test-unit test-integration docker-build docker-up docker-down docker-logs docker-ps docker-restart help
+.PHONY: install run test test-unit test-integration lint format docker-build docker-up docker-down docker-logs docker-ps docker-restart help
 
 install: ## Instala as dependências do backend com o Poetry
 	cd $(BACKEND_DIR) && $(POETRY) install
@@ -22,6 +22,12 @@ test-unit: ## Executa só os testes unitários do backend
 
 test-integration: ## Executa só os testes de integração do backend
 	cd $(BACKEND_DIR) && $(POETRY) run pytest -v tests/integration
+
+lint: ## Verifica o código com o ruff (lint + formatação)
+	cd $(BACKEND_DIR) && $(POETRY) run ruff check . && $(POETRY) run ruff format --check .
+
+format: ## Formata o código e corrige o que o ruff consegue sozinho
+	cd $(BACKEND_DIR) && $(POETRY) run ruff format . && $(POETRY) run ruff check --fix .
 
 docker-build: ## Builda as imagens dos serviços via Docker Compose
 	$(DOCKER_COMPOSE) build
