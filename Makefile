@@ -6,7 +6,7 @@ HOST := 0.0.0.0
 PORT := 8000
 DOCKER_COMPOSE := docker compose
 
-.PHONY: install run test docker-build docker-up docker-down docker-logs docker-ps docker-restart help
+.PHONY: install run test test-unit test-integration docker-build docker-up docker-down docker-logs docker-ps docker-restart help
 
 install: ## Instala as dependências do backend com o Poetry
 	cd $(BACKEND_DIR) && $(POETRY) install
@@ -14,8 +14,14 @@ install: ## Instala as dependências do backend com o Poetry
 run: ## Sobe o servidor FastAPI em modo de desenvolvimento (com reload)
 	cd $(BACKEND_DIR) && $(POETRY) run uvicorn $(APP) --host $(HOST) --port $(PORT) --reload
 
-test: ## Executa os testes do backend com o Pytest
+test: ## Executa todos os testes do backend com o Pytest
 	cd $(BACKEND_DIR) && $(POETRY) run pytest -v
+
+test-unit: ## Executa só os testes unitários do backend
+	cd $(BACKEND_DIR) && $(POETRY) run pytest -v tests/unit
+
+test-integration: ## Executa só os testes de integração do backend
+	cd $(BACKEND_DIR) && $(POETRY) run pytest -v tests/integration
 
 docker-build: ## Builda as imagens dos serviços via Docker Compose
 	$(DOCKER_COMPOSE) build
@@ -36,4 +42,4 @@ docker-restart: ## Reinicia o serviço do backend (down + up)
 	$(DOCKER_COMPOSE) restart backend
 
 help: ## Lista os comandos disponíveis
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-10s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-18s\033[0m %s\n", $$1, $$2}'
