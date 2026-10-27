@@ -12,6 +12,8 @@ RUN pip install --no-cache-dir poetry==2.4.1
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-root --only main
 
+COPY alembic.ini ./
+COPY alembic ./alembic
 COPY app ./app
 
 EXPOSE 8000

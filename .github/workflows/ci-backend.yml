@@ -8,6 +8,26 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    # Postgres descartável só pro CI: as migrations e os testes de integração rodam nele
+    services:
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sistema_distribuido
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/sistema_distribuido
+      TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/sistema_distribuido
+
     defaults:
       run:
         working-directory: backend
@@ -26,6 +46,18 @@ jobs:
 
       - name: Instala as dependências
         run: poetry install --no-root
+
+      - name: Verifica o lint
+        run: poetry run ruff check . && poetry run ruff format --check .
+
+      # Garante que as migrations montam o banco do zero, que batem com os modelos
+      # (alembic check) e que o downgrade também funciona
+      - name: Valida as migrations
+        run: |
+          poetry run alembic upgrade head
+          poetry run alembic check
+          poetry run alembic downgrade base
+          poetry run alembic upgrade head
 
       - name: Executa os testes unitários
         run: poetry run pytest -v tests/unit

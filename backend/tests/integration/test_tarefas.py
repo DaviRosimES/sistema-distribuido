@@ -42,7 +42,12 @@ def test_put_substitui_tarefa(client, tarefa):
     response = client.put(f"/tarefas/{tarefa['id']}", json={"titulo": "Novo", "concluida": True})
 
     assert response.status_code == 200
-    assert response.json() == {"id": tarefa["id"], "titulo": "Novo", "descricao": None, "concluida": True}
+    assert response.json() == {
+        "id": tarefa["id"],
+        "titulo": "Novo",
+        "descricao": None,
+        "concluida": True,
+    }
 
 
 def test_patch_atualiza_so_campos_enviados(client, tarefa):
