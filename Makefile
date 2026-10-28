@@ -42,4 +42,36 @@ docker-restart: ## Reinicia o serviço do backend (down + up)
 	$(DOCKER_COMPOSE) restart backend
 
 help: ## Lista os comandos disponíveis
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-18s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-18s\033[0m %s\n", $$1, $$2}'
+
+# Frontend (os comandos usam npm --prefix, então funcionam a partir da raiz)
+FRONTEND_DIR := frontend
+NPM := npm --prefix $(FRONTEND_DIR)
+
+.PHONY: frontend-install frontend-dev frontend-lint frontend-format frontend-check frontend-test frontend-test-e2e frontend-build check-all
+
+frontend-install: ## Instala as dependências do frontend pelo package-lock (npm ci)
+	$(NPM) ci
+
+frontend-dev: ## Sobe o frontend em modo de desenvolvimento (Vite)
+	$(NPM) run dev
+
+frontend-lint: ## Verifica o frontend com o lint do Biome
+	$(NPM) run lint
+
+frontend-format: ## Formata o código do frontend com o Biome
+	$(NPM) run format
+
+frontend-check: ## Verifica lint e formatação do frontend sem alterar arquivos
+	$(NPM) run lint && $(NPM) run format:check
+
+frontend-test: ## Executa os testes unitários e de integração do frontend (Vitest)
+	$(NPM) run test
+
+frontend-test-e2e: ## Executa os testes E2E do frontend (Playwright)
+	$(NPM) run test:e2e
+
+frontend-build: ## Gera o build de produção do frontend
+	$(NPM) run build
+
+check-all: test frontend-check frontend-test frontend-build frontend-test-e2e ## Roda as verificações do backend e do frontend
