@@ -20,11 +20,41 @@ services:
       - "${BACKEND_PORT:-8000}:8000"
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-sistema_distribuido}
+      # Só o endereço do frontend pode chamar a API pelo navegador
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:${FRONTEND_PORT:-5173},http://127.0.0.1:${FRONTEND_PORT:-5173}}
     depends_on:
       db:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+    # A imagem slim não tem curl, então o healthcheck usa o próprio Python pra chamar o GET /
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    environment:
+      # O React roda no navegador, não no container, então a API é acessada pela porta
+      # publicada no host (localhost), e não pelo nome do serviço "backend"
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:${BACKEND_PORT:-8000}}
+    depends_on:
+      backend:
+        condition: service_healthy
+    # 127.0.0.1 em vez de localhost: no Alpine o localhost resolve primeiro pro IPv6 (::1)
+    # e o Vite com --host 0.0.0.0 só escuta em IPv4
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:5173/"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - app-network
 
