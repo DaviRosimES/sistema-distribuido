@@ -4,7 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from app.api.dependencies import get_tarefa_service
 from app.schemas.tarefa import Tarefa, TarefaCreate, TarefaPatch, TarefaUpdate
-from app.services.tarefa_service import TarefaNaoEncontradaError, TarefaService
+from app.services.tarefa_service import (
+    TarefaDuplicadaError,
+    TarefaNaoEncontradaError,
+    TarefaService,
+)
 
 router = APIRouter(prefix="/tarefas", tags=["tarefas"])
 
@@ -14,6 +18,10 @@ TarefaId = Annotated[int, Path(gt=0, description="ID da tarefa")]
 
 def _nao_encontrada(erro: TarefaNaoEncontradaError) -> HTTPException:
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(erro))
+
+
+def _duplicada(erro: TarefaDuplicadaError) -> HTTPException:
+    return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(erro))
 
 
 @router.get("", response_model=list[Tarefa])
@@ -34,7 +42,10 @@ def buscar_tarefa(tarefa_id: TarefaId, service: ServiceDep):
 
 @router.post("", response_model=Tarefa, status_code=status.HTTP_201_CREATED)
 def criar_tarefa(dados: TarefaCreate, service: ServiceDep):
-    return service.criar(dados)
+    try:
+        return service.criar(dados)
+    except TarefaDuplicadaError as erro:
+        raise _duplicada(erro) from erro
 
 
 @router.put("/{tarefa_id}", response_model=Tarefa)
@@ -43,6 +54,8 @@ def substituir_tarefa(tarefa_id: TarefaId, dados: TarefaUpdate, service: Service
         return service.substituir(tarefa_id, dados)
     except TarefaNaoEncontradaError as erro:
         raise _nao_encontrada(erro) from erro
+    except TarefaDuplicadaError as erro:
+        raise _duplicada(erro) from erro
 
 
 @router.patch("/{tarefa_id}", response_model=Tarefa)
@@ -51,6 +64,8 @@ def atualizar_tarefa(tarefa_id: TarefaId, dados: TarefaPatch, service: ServiceDe
         return service.atualizar_parcial(tarefa_id, dados)
     except TarefaNaoEncontradaError as erro:
         raise _nao_encontrada(erro) from erro
+    except TarefaDuplicadaError as erro:
+        raise _duplicada(erro) from erro
 
 
 @router.delete("/{tarefa_id}", status_code=status.HTTP_204_NO_CONTENT)

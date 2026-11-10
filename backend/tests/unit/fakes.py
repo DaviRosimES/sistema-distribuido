@@ -16,6 +16,9 @@ class FakeTarefaRepository:
     def buscar(self, tarefa_id: int) -> TarefaModel | None:
         return self.tarefas.get(tarefa_id)
 
+    def buscar_por_titulo(self, titulo: str) -> TarefaModel | None:
+        return next((t for t in self.tarefas.values() if t.titulo == titulo), None)
+
     def salvar(self, tarefa: TarefaModel) -> TarefaModel:
         if tarefa.id is None:
             tarefa.id = self._proximo_id

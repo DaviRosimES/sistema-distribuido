@@ -106,3 +106,28 @@ def test_query_param_invalido_retorna_422(client):
     response = client.get("/tarefas", params={"concluida": "talvez"})
 
     assert response.status_code == 422
+
+
+def test_post_com_titulo_repetido_retorna_409(client, tarefa):
+    response = client.post("/tarefas", json={"titulo": tarefa["titulo"]})
+
+    assert response.status_code == 409
+    assert response.json() == {"detail": "Já existe uma tarefa com esse título"}
+    assert len(client.get("/tarefas").json()) == 1
+
+
+@pytest.mark.parametrize("metodo", ["put", "patch"])
+def test_trocar_para_titulo_de_outra_tarefa_retorna_409(client, tarefa, metodo):
+    outra = client.post("/tarefas", json={"titulo": "Revisar"}).json()
+
+    response = client.request(metodo.upper(), f"/tarefas/{outra['id']}", json={"titulo": "Estudar"})
+
+    assert response.status_code == 409
+    assert client.get(f"/tarefas/{outra['id']}").json()["titulo"] == "Revisar"
+
+
+def test_put_mantendo_o_proprio_titulo_retorna_200(client, tarefa):
+    response = client.put(f"/tarefas/{tarefa['id']}", json={"titulo": "Estudar", "concluida": True})
+
+    assert response.status_code == 200
+    assert response.json()["concluida"] is True

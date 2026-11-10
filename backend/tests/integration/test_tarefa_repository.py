@@ -1,3 +1,6 @@
+import pytest
+from sqlalchemy.exc import IntegrityError
+
 from app.models.tarefa import TarefaModel
 
 
@@ -46,3 +49,18 @@ def test_remover_apaga_tarefa(repository):
 
     assert repository.buscar(salva.id) is None
     assert repository.listar() == []
+
+
+def test_buscar_por_titulo(repository):
+    salva = repository.salvar(TarefaModel(titulo="A"))
+
+    assert repository.buscar_por_titulo("A") == salva
+    assert repository.buscar_por_titulo("B") is None
+
+
+def test_banco_recusa_titulo_repetido(repository):
+    # Mesmo se alguém passar por cima do service, a constraint do banco segura
+    repository.salvar(TarefaModel(titulo="A"))
+
+    with pytest.raises(IntegrityError):
+        repository.salvar(TarefaModel(titulo="A"))

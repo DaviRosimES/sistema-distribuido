@@ -1,19 +1,26 @@
 name: CI Frontend
 
-# Só roda quando algo do frontend (ou o próprio workflow) muda
+# O E2E sobe a stack inteira, então mudanças no backend, no compose e no Makefile
+# também podem quebrar o frontend e disparam este workflow
 on:
   push:
     paths:
       - "frontend/**"
+      - "backend/**"
+      - "docker-compose.yml"
+      - "Makefile"
       - ".github/workflows/ci-frontend.yml"
   pull_request:
     paths:
       - "frontend/**"
+      - "backend/**"
+      - "docker-compose.yml"
+      - "Makefile"
       - ".github/workflows/ci-frontend.yml"
 
 jobs:
   frontend:
-    name: Biome, Vitest, Build e Playwright
+    name: Biome, Vitest, Build e E2E full-stack
     runs-on: ubuntu-latest
 
     defaults:
@@ -49,8 +56,10 @@ jobs:
       - name: Instala o Chromium do Playwright
         run: npx playwright install --with-deps chromium
 
-      - name: Executa os testes E2E
-        run: npm run test:e2e
+      # Sobe db, api e frontend num projeto separado do Compose, roda o Playwright e derruba tudo
+      - name: Executa os testes E2E full-stack
+        working-directory: .
+        run: make e2e
 
       # Se o E2E quebrar, o relatório (com o trace do retry) fica disponível pra baixar no run
       - name: Envia o relatório do Playwright
