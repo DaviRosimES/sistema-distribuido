@@ -141,3 +141,93 @@ describe("App cadastrando tarefas", () => {
     expect(api.fetch).toHaveBeenCalledOnce();
   });
 });
+
+describe("App alterando tarefas", () => {
+  it("marca como concluída mandando um PATCH", async () => {
+    const { user, api } = renderizarApp([{ id: 1, titulo: "Estudar" }]);
+
+    await user.click(await screen.findByRole("checkbox", { name: "Estudar" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("checkbox", { name: "Estudar" })).toBeChecked();
+    });
+    expect(api.fetch).toHaveBeenCalledWith(
+      `${API_URL}/tarefas/1`,
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ concluida: true }),
+      }),
+    );
+  });
+
+  it("edita com PUT mantendo o status de concluída", async () => {
+    const { user, api } = renderizarApp([
+      { id: 1, titulo: "Estudar", concluida: true },
+    ]);
+
+    await user.click(await screen.findByRole("button", { name: "Editar" }));
+    await user.clear(screen.getAllByLabelText("Título")[1]);
+    await user.type(screen.getAllByLabelText("Título")[1], "Revisar");
+    await user.click(screen.getByRole("button", { name: "Salvar" }));
+
+    expect(
+      await screen.findByRole("checkbox", { name: "Revisar" }),
+    ).toBeChecked();
+    expect(api.fetch).toHaveBeenCalledWith(
+      `${API_URL}/tarefas/1`,
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({
+          titulo: "Revisar",
+          descricao: null,
+          concluida: true,
+        }),
+      }),
+    );
+  });
+
+  it("mostra o 409 na edição quando o título já é de outra tarefa", async () => {
+    const { user } = renderizarApp([
+      { id: 1, titulo: "Estudar" },
+      { id: 2, titulo: "Revisar" },
+    ]);
+
+    const [, segunda] = await screen.findAllByRole("listitem");
+    await user.click(within(segunda).getByRole("button", { name: "Editar" }));
+    const campo = within(segunda).getByLabelText("Título");
+    await user.clear(campo);
+    await user.type(campo, "Estudar");
+    await user.click(within(segunda).getByRole("button", { name: "Salvar" }));
+
+    expect(await within(segunda).findByRole("alert")).toHaveTextContent(
+      "Já existe uma tarefa com esse título",
+    );
+    expect(campo).toHaveValue("Estudar");
+  });
+
+  it("remove com DELETE e volta pra lista vazia", async () => {
+    const { user, api } = renderizarApp([{ id: 1, titulo: "Estudar" }]);
+
+    await user.click(await screen.findByRole("button", { name: "Remover" }));
+
+    expect(
+      await screen.findByText("Nenhuma tarefa cadastrada."),
+    ).toBeInTheDocument();
+    expect(api.fetch).toHaveBeenCalledWith(`${API_URL}/tarefas/1`, {
+      method: "DELETE",
+    });
+  });
+
+  it("mostra o 404 quando a tarefa já tinha sido removida em outra aba", async () => {
+    const { user, api } = renderizarApp([{ id: 1, titulo: "Estudar" }]);
+    await screen.findByRole("listitem");
+    // Some do "banco" sem passar pela tela
+    api.tarefas.splice(0, 1);
+
+    await user.click(screen.getByRole("button", { name: "Remover" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Tarefa 1 não encontrada",
+    );
+  });
+});
