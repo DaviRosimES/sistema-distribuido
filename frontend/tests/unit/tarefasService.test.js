@@ -9,18 +9,7 @@ import {
   removerTarefa,
   substituirTarefa,
 } from "../../src/services/tarefas";
-
-// Monta uma resposta parecida com a do fetch de verdade
-function resposta(status, corpo) {
-  return {
-    ok: status >= 200 && status < 300,
-    status,
-    json: async () => {
-      if (corpo === undefined) throw new SyntaxError("sem corpo");
-      return corpo;
-    },
-  };
-}
+import { resposta } from "../helpers/api";
 
 const TAREFA = { id: 1, titulo: "Estudar", descricao: null, concluida: false };
 
