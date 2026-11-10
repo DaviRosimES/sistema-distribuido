@@ -90,10 +90,31 @@ frontend-check: ## Verifica lint e formatação do frontend sem alterar arquivos
 frontend-test: ## Executa os testes unitários e de integração do frontend (Vitest)
 	$(NPM) run test
 
-frontend-test-e2e: ## Executa os testes E2E do frontend (Playwright)
+frontend-test-e2e: ## Roda o Playwright contra uma stack já no ar (E2E_BASE_URL, padrão localhost:5173)
 	$(NPM) run test:e2e
 
 frontend-build: ## Gera o build de produção do frontend
 	$(NPM) run build
 
-check-all: test frontend-check frontend-test frontend-build frontend-test-e2e ## Roda as verificações do backend e do frontend
+check-all: lint test frontend-check frontend-test frontend-build e2e ## Roda tudo: backend, frontend e E2E (precisa do Docker)
+
+# E2E full-stack numa stack separada da de desenvolvimento: outro projeto do Compose,
+# outras portas e um volume próprio do Postgres. As variáveis passadas aqui têm prioridade
+# sobre o .env, então o banco de desenvolvimento nunca é tocado.
+E2E_PROJECT := sistema-distribuido-e2e
+E2E_BACKEND_PORT := 8001
+E2E_FRONTEND_PORT := 5174
+E2E_COMPOSE := BACKEND_PORT=$(E2E_BACKEND_PORT) FRONTEND_PORT=$(E2E_FRONTEND_PORT) POSTGRES_PORT=5433 \
+	CORS_ORIGINS=http://localhost:$(E2E_FRONTEND_PORT),http://127.0.0.1:$(E2E_FRONTEND_PORT) \
+	VITE_API_URL=http://localhost:$(E2E_BACKEND_PORT) \
+	$(DOCKER_COMPOSE) -p $(E2E_PROJECT)
+
+.PHONY: e2e
+
+e2e: ## Sobe uma stack isolada, roda o E2E full-stack e derruba tudo no final (down -v)
+	@$(E2E_COMPOSE) up -d --build --wait; status=$$?; \
+	if [ $$status -eq 0 ]; then \
+		E2E_BASE_URL=http://localhost:$(E2E_FRONTEND_PORT) $(NPM) run test:e2e; status=$$?; \
+	fi; \
+	$(E2E_COMPOSE) down -v; \
+	exit $$status
