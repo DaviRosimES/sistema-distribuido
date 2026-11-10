@@ -1,12 +1,12 @@
 import pytest
 
-from app.repositories.tarefa_repository import TarefaRepository
 from app.services.tarefa_service import TarefaService
+from tests.unit.fakes import FakeTarefaRepository
 
 
 @pytest.fixture
 def repository():
-    return TarefaRepository()
+    return FakeTarefaRepository()
 
 
 @pytest.fixture

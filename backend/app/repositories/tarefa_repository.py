@@ -1,27 +1,31 @@
-from app.schemas.tarefa import Tarefa
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app.models.tarefa import TarefaModel
 
 
 class TarefaRepository:
-    # Por enquanto os dados ficam em memória, depois dá pra trocar pelo Postgres sem mexer nas outras camadas
-    def __init__(self):
-        self._tarefas: dict[int, Tarefa] = {}
-        self._proximo_id = 1
+    # Só essa camada conhece o SQLAlchemy, o service e as rotas não sabem que existe um banco
+    def __init__(self, db: Session):
+        self.db = db
 
-    def listar(self) -> list[Tarefa]:
-        return list(self._tarefas.values())
+    def listar(self, concluida: bool | None = None) -> list[TarefaModel]:
+        # O filtro vai pro WHERE em vez de filtrar em Python, assim o banco só devolve o necessário
+        query = select(TarefaModel).order_by(TarefaModel.id)
+        if concluida is not None:
+            query = query.where(TarefaModel.concluida == concluida)
+        return list(self.db.scalars(query))
 
-    def buscar(self, tarefa_id: int) -> Tarefa | None:
-        return self._tarefas.get(tarefa_id)
+    def buscar(self, tarefa_id: int) -> TarefaModel | None:
+        return self.db.get(TarefaModel, tarefa_id)
 
-    def criar(self, dados: dict) -> Tarefa:
-        tarefa = Tarefa(id=self._proximo_id, **dados)
-        self._tarefas[tarefa.id] = tarefa
-        self._proximo_id += 1
+    def salvar(self, tarefa: TarefaModel) -> TarefaModel:
+        # Serve tanto pra criar quanto pra atualizar: o add numa tarefa que já existe não duplica
+        self.db.add(tarefa)
+        self.db.commit()
+        self.db.refresh(tarefa)
         return tarefa
 
-    def salvar(self, tarefa: Tarefa) -> Tarefa:
-        self._tarefas[tarefa.id] = tarefa
-        return tarefa
-
-    def remover(self, tarefa_id: int) -> bool:
-        return self._tarefas.pop(tarefa_id, None) is not None
+    def remover(self, tarefa: TarefaModel) -> None:
+        self.db.delete(tarefa)
+        self.db.commit()

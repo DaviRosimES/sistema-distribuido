@@ -5,10 +5,13 @@ description = "Backend do sistema distribuido"
 authors = [
     {name = "Davi Rosim",email = "davi.rosim@ges.inatel.br"}
 ]
-requires-python = "^3.11"
+requires-python = ">=3.11,<4.0"
 dependencies = [
     "fastapi (>=0.141.1,<0.142.0)",
-    "uvicorn[standard] (>=0.52.4,<0.53.0)"
+    "uvicorn[standard] (>=0.52.4,<0.53.0)",
+    "sqlalchemy (>=2.1.4,<3.0.0)",
+    "psycopg[binary] (>=3.3.6,<4.0.0)",
+    "alembic (>=1.20.0,<2.0.0)"
 ]
 
 [tool.poetry]
@@ -21,9 +24,16 @@ build-backend = "poetry.core.masonry.api"
 [dependency-groups]
 dev = [
     "pytest (>=9.1.1,<10.0.0)",
-    "httpx (>=0.28.1,<0.29.0)"
+    "httpx (>=0.28.1,<0.29.0)",
+    "ruff (>=0.17.1,<0.18.0)"
 ]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

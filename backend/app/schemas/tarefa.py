@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class TarefaBase(BaseModel):
@@ -32,4 +32,7 @@ class TarefaPatch(BaseModel):
 
 
 class Tarefa(TarefaBase):
+    # from_attributes deixa o FastAPI montar a resposta direto a partir do modelo ORM
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
