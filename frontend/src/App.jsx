@@ -17,7 +17,7 @@ export default function App() {
   return (
     <main className="mx-auto min-h-screen max-w-xl space-y-6 p-4 sm:p-6">
       <h1 className="text-3xl font-bold">Gerenciador de Tarefas</h1>
-      <TarefaForm onAdicionar={adicionarTarefa} />
+      <TarefaForm onSalvar={adicionarTarefa} />
       <section aria-labelledby="tarefas-titulo" className="space-y-3">
         <h2 id="tarefas-titulo" className="text-xl font-semibold">
           Tarefas cadastradas
