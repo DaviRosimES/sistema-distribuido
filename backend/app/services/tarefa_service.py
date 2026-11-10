@@ -11,6 +11,12 @@ class TarefaNaoEncontradaError(Exception):
         self.tarefa_id = tarefa_id
 
 
+class TarefaDuplicadaError(Exception):
+    def __init__(self, titulo: str):
+        super().__init__("Já existe uma tarefa com esse título")
+        self.titulo = titulo
+
+
 class TarefaService:
     def __init__(self, repository: TarefaRepository):
         self.repository = repository
@@ -25,6 +31,7 @@ class TarefaService:
         return tarefa
 
     def criar(self, dados: TarefaCreate) -> TarefaModel:
+        self._garantir_titulo_livre(dados.titulo)
         # É aqui que o schema da API vira o modelo do banco
         return self.repository.salvar(TarefaModel(**dados.model_dump()))
 
@@ -41,6 +48,14 @@ class TarefaService:
         self.repository.remover(self.buscar(tarefa_id))
 
     def _aplicar(self, tarefa: TarefaModel, alteracoes: dict[str, Any]) -> TarefaModel:
+        if "titulo" in alteracoes:
+            self._garantir_titulo_livre(alteracoes["titulo"], tarefa.id)
         for campo, valor in alteracoes.items():
             setattr(tarefa, campo, valor)
         return self.repository.salvar(tarefa)
+
+    def _garantir_titulo_livre(self, titulo: str, tarefa_id: int | None = None) -> None:
+        # A própria tarefa pode manter o título dela; o erro é só quando outra já usa
+        existente = self.repository.buscar_por_titulo(titulo)
+        if existente is not None and existente.id != tarefa_id:
+            raise TarefaDuplicadaError(titulo)

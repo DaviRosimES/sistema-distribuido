@@ -19,6 +19,9 @@ class TarefaRepository:
     def buscar(self, tarefa_id: int) -> TarefaModel | None:
         return self.db.get(TarefaModel, tarefa_id)
 
+    def buscar_por_titulo(self, titulo: str) -> TarefaModel | None:
+        return self.db.scalar(select(TarefaModel).where(TarefaModel.titulo == titulo))
+
     def salvar(self, tarefa: TarefaModel) -> TarefaModel:
         # Serve tanto pra criar quanto pra atualizar: o add numa tarefa que já existe não duplica
         self.db.add(tarefa)
