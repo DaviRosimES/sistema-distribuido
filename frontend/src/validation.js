@@ -118,13 +118,13 @@ export function validarSimulacao(form) {
             `A descrição deve ter no máximo ${DESCRICAO_SIMULACAO_MAX_LENGTH} caracteres.`,
           ]
         : [descricao || null, null],
-    valor_brl: numeroDecimal(form.valor_brl, {
+    valor: numeroDecimal(form.valor, {
       min: 0,
       max: REAIS_MAX,
       casas: 2,
       maiorQueMin: true,
     }),
-    preco_btc_brl: numeroDecimal(form.preco_btc_brl, {
+    preco_btc: numeroDecimal(form.preco_btc, {
       min: 0,
       max: REAIS_MAX,
       casas: 2,

@@ -8,6 +8,6 @@ from pydantic import BaseModel, ConfigDict, PlainSerializer
 class Cotacao(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    preco_btc_brl: Annotated[Decimal, PlainSerializer(float, return_type=float, when_used="json")]
+    preco_btc: Annotated[Decimal, PlainSerializer(float, return_type=float, when_used="json")]
     fonte: str
     consultada_em: datetime

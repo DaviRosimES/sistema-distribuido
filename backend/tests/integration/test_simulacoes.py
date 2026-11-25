@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.models.simulacao import SimulacaoModel
 from tests.integration.conftest import CORRETORA_VALIDA
 
-PEDIDO = {"valor_brl": 1000, "preco_btc_brl": 500000}
+PEDIDO = {"valor": 1000, "preco_btc": 500000}
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ def test_post_calcula_e_devolve_o_ranking(client, corretora):
     assert corpo["melhor_corretora"] == "Corretora A"
     assert corpo["criada_em"]
     item = corpo["ranking"][0]
-    assert item["custo_total_brl"] == 115.0
+    assert item["custo_total"] == 115.0
     assert item["custo_pct"] == 11.5
     assert item["sats_recebidos"] == 177_000
 
@@ -47,12 +47,12 @@ def test_post_sem_corretora_responde_422(client):
 @pytest.mark.parametrize(
     "alteracao",
     [
-        {"valor_brl": 0},
-        {"preco_btc_brl": -1},
+        {"valor": 0},
+        {"preco_btc": -1},
         {"rede": "pix"},
         {"compras_por_saque": 0},
         {"compras_por_saque": 53},
-        {"valor_brl": "10.001"},
+        {"valor": "10.001"},
     ],
 )
 def test_post_invalido_responde_422(client, corretora, alteracao):
@@ -87,8 +87,8 @@ def test_patch_de_parametro_recalcula(client, simulacao):
 
     assert response.status_code == 200
     item = response.json()["ranking"][0]
-    assert item["custo_total_brl"] == 160.0
-    assert item["economia_brl"] == 300.0
+    assert item["custo_total"] == 160.0
+    assert item["economia"] == 300.0
 
 
 def test_simulacao_continua_depois_de_apagar_a_corretora(client, corretora, simulacao):

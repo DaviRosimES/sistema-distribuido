@@ -29,7 +29,7 @@ def test_usa_a_primeira_fonte_que_responder(relogio):
 
     cotacao = CotacaoService([principal, reserva], agora=relogio).obter()
 
-    assert cotacao.preco_btc_brl == Decimal(343000)
+    assert cotacao.preco_btc == Decimal(343000)
     assert cotacao.fonte == "Principal"
     assert cotacao.consultada_em == relogio()
     assert reserva.chamadas == 0
@@ -72,7 +72,7 @@ def test_consulta_de_novo_quando_o_cache_vence(relogio):
     relogio.avancar(60)
     fonte.preco = "350000"
 
-    assert service.obter().preco_btc_brl == Decimal(350000)
+    assert service.obter().preco_btc == Decimal(350000)
     assert fonte.chamadas == 2
 
 
@@ -84,4 +84,4 @@ def test_erro_nao_fica_em_cache(relogio):
 
     fonte.preco = "343000"
 
-    assert service.obter().preco_btc_brl == Decimal(343000)
+    assert service.obter().preco_btc == Decimal(343000)

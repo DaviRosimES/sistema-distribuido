@@ -70,7 +70,7 @@ describe("SimulacaoItem", () => {
       screen.getByRole("button", { name: "Recalcular com taxas atuais" }),
     );
 
-    expect(acoes.onAtualizar).toHaveBeenCalledWith(dados, { valor_brl: 1000 });
+    expect(acoes.onAtualizar).toHaveBeenCalledWith(dados, { valor: 1000 });
   });
 
   it("mostra o erro da API ao remover", async () => {

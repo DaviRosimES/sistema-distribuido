@@ -55,9 +55,7 @@ export function SimulacaoItem({
 
   // Mandar um parâmetro do cálculo (mesmo igual) faz a API refazer o ranking com as taxas atuais
   function recalcular() {
-    return executar(() =>
-      onAtualizar(simulacao, { valor_brl: simulacao.valor_brl }),
-    );
+    return executar(() => onAtualizar(simulacao, { valor: simulacao.valor }));
   }
 
   return (
@@ -112,8 +110,8 @@ export function SimulacaoItem({
       )}
 
       <p className="text-sm">
-        {formatarReais(simulacao.valor_brl)} por compra · BTC a{" "}
-        {formatarReais(simulacao.preco_btc_brl)} · saque{" "}
+        {formatarReais(simulacao.valor)} por compra · BTC a{" "}
+        {formatarReais(simulacao.preco_btc)} · saque{" "}
         {NOME_DA_REDE[simulacao.rede]}
         {simulacao.compras_por_saque > 1 &&
           ` a cada ${simulacao.compras_por_saque} compras`}
@@ -122,8 +120,8 @@ export function SimulacaoItem({
         {melhor ? (
           <>
             Melhor opção: <strong>{melhor.corretora_nome}</strong> com custo de{" "}
-            {formatarReais(melhor.custo_total_brl)} (
-            {formatarPct(melhor.custo_pct)})
+            {formatarReais(melhor.custo_total)} ({formatarPct(melhor.custo_pct)}
+            )
           </>
         ) : (
           <strong className="text-red-700 dark:text-red-300">

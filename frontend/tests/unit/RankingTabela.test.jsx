@@ -17,7 +17,7 @@ describe("RankingTabela", () => {
             itemRanking({
               corretora_id: 2,
               corretora_nome: "Barata",
-              custo_total_brl: 30,
+              custo_total: 30,
             }),
             itemRanking(),
           ],
@@ -60,7 +60,7 @@ describe("RankingTabela", () => {
         simulacao={simulacao({
           compras_por_saque: 4,
           custo_alvo_pct: 2,
-          ranking: [itemRanking({ economia_brl: 300, valor_minimo_brl: 5000 })],
+          ranking: [itemRanking({ economia: 300, valor_minimo: 5000 })],
         })}
       />,
     );
@@ -82,7 +82,7 @@ describe("RankingTabela", () => {
     render(
       <RankingTabela
         simulacao={simulacao({
-          ranking: [itemRanking({ valor_minimo_brl: 0 })],
+          ranking: [itemRanking({ valor_minimo: 0 })],
         })}
       />,
     );

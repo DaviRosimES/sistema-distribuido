@@ -63,19 +63,19 @@ export function RankingTabela({ simulacao }) {
                   </td>
                   <td className="p-2 text-right">
                     <span className="font-semibold">
-                      {formatarReais(item.custo_total_brl)}
+                      {formatarReais(item.custo_total)}
                     </span>
                     <span className="block text-xs">
                       {formatarPct(item.custo_pct)}
                     </span>
                   </td>
                   <td className="p-2 text-xs">
-                    Negociação {formatarReais(item.taxa_negociacao_brl)} ·
-                    Spread {formatarReais(item.spread_brl)} · Saque{" "}
-                    {formatarReais(item.taxa_saque_brl)}
-                    {juntaSaques && item.economia_brl > 0 && (
+                    Negociação {formatarReais(item.taxa_negociacao)} · Spread{" "}
+                    {formatarReais(item.spread)} · Saque{" "}
+                    {formatarReais(item.taxa_saque)}
+                    {juntaSaques && item.economia > 0 && (
                       <span className="block text-green-700 dark:text-green-400">
-                        Economia de {formatarReais(item.economia_brl)} juntando{" "}
+                        Economia de {formatarReais(item.economia)} juntando{" "}
                         {compras_por_saque} compras por saque
                       </span>
                     )}
@@ -87,7 +87,7 @@ export function RankingTabela({ simulacao }) {
                 </td>
               )}
               <td className="p-2 text-right">
-                {textoValorMinimo(item.valor_minimo_brl)}
+                {textoValorMinimo(item.valor_minimo)}
               </td>
             </tr>
           ))}

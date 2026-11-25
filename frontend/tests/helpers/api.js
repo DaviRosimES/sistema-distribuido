@@ -95,7 +95,7 @@ export function criarApiFalsa({ corretoras = [], simulacoes = [] } = {}) {
     }
     if (metodo === "PUT" || metodo === "PATCH") {
       lista[indice] = { ...lista[indice], ...corpo };
-      if (recurso === "simulacoes" && corpo.valor_brl !== undefined) {
+      if (recurso === "simulacoes" && corpo.valor !== undefined) {
         lista[indice].ranking = ranking();
       }
     }

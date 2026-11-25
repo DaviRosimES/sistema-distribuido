@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class Cotacao:
-    preco_btc_brl: Decimal
+    preco_btc: Decimal
     fonte: str
     consultada_em: datetime
 

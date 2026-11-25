@@ -25,8 +25,8 @@ describe("SimulacaoForm", () => {
 
     expect(onSimular).toHaveBeenCalledWith({
       descricao: null,
-      valor_brl: 250.5,
-      preco_btc_brl: 500000,
+      valor: 250.5,
+      preco_btc: 500000,
       rede: "lightning",
       compras_por_saque: 4,
       custo_alvo_pct: 1,
@@ -79,7 +79,7 @@ describe("SimulacaoForm buscando a cotação", () => {
   it("preenche o preço com a cotação da API e mostra a fonte", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       resposta(200, {
-        preco_btc_brl: 343635.12,
+        preco_btc: 343635.12,
         fonte: "Binance",
         consultada_em: "2026-11-25T13:38:00Z",
       }),

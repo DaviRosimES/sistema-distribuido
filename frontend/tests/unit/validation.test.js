@@ -19,8 +19,8 @@ const CORRETORA = {
 
 const SIMULACAO = {
   descricao: "",
-  valor_brl: "1.000,00",
-  preco_btc_brl: "500000",
+  valor: "1.000,00",
+  preco_btc: "500000",
   rede: "onchain",
   compras_por_saque: "1",
   custo_alvo_pct: "1",
@@ -93,8 +93,8 @@ describe("validarSimulacao", () => {
     expect(erros).toEqual({});
     expect(valores).toEqual({
       descricao: null,
-      valor_brl: 1000,
-      preco_btc_brl: 500000,
+      valor: 1000,
+      preco_btc: 500000,
       rede: "onchain",
       compras_por_saque: 1,
       custo_alvo_pct: 1,
@@ -102,9 +102,9 @@ describe("validarSimulacao", () => {
   });
 
   it.each([
-    ["valor_brl", "0", "Deve ser maior que 0."],
-    ["valor_brl", "10,001", "Use no máximo 2 casas decimais."],
-    ["preco_btc_brl", "", "Campo obrigatório."],
+    ["valor", "0", "Deve ser maior que 0."],
+    ["valor", "10,001", "Use no máximo 2 casas decimais."],
+    ["preco_btc", "", "Campo obrigatório."],
     ["compras_por_saque", "0", "Deve ser no mínimo 1."],
     ["compras_por_saque", "53", "Deve ser no máximo 52."],
     ["custo_alvo_pct", "0", "Deve ser maior que 0."],

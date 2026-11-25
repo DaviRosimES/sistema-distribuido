@@ -17,8 +17,8 @@ class SimulacaoModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     descricao: Mapped[str | None] = mapped_column(String(100))
-    valor_brl: Mapped[Decimal] = mapped_column(Numeric(14, 2))
-    preco_btc_brl: Mapped[Decimal] = mapped_column(Numeric(14, 2))
+    valor: Mapped[Decimal] = mapped_column(Numeric(14, 2))
+    preco_btc: Mapped[Decimal] = mapped_column(Numeric(14, 2))
     rede: Mapped[str] = mapped_column(String(10))
     compras_por_saque: Mapped[int]
     custo_alvo_pct: Mapped[Decimal] = mapped_column(Numeric(6, 3))

@@ -87,12 +87,12 @@ describe("serviço de simulações", () => {
   });
 
   it("criarSimulacao faz POST com os parâmetros", async () => {
-    await criarSimulacao({ valor_brl: 1000 });
+    await criarSimulacao({ valor: 1000 });
 
     expect(fetchMock).toHaveBeenCalledWith(`${API_URL}/simulacoes`, {
       method: "POST",
       headers: JSON_HEADERS,
-      body: JSON.stringify({ valor_brl: 1000 }),
+      body: JSON.stringify({ valor: 1000 }),
     });
   });
 

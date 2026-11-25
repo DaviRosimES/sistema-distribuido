@@ -34,13 +34,13 @@ def test_custo_de_uma_compra_com_saque_onchain():
     custo = calcular_custo(Corretora(), Decimal(1000), PRECO, Rede.ONCHAIN)
 
     assert custo.viavel is True
-    assert custo.taxa_negociacao_brl == Decimal("5.00")
-    assert custo.spread_brl == Decimal("10.00")
-    assert custo.taxa_saque_brl == Decimal("100.00")
+    assert custo.taxa_negociacao == Decimal("5.00")
+    assert custo.spread == Decimal("10.00")
+    assert custo.taxa_saque == Decimal("100.00")
     assert custo.sats_recebidos == 177_000
-    assert custo.custo_total_brl == Decimal("115.00")
+    assert custo.custo_total == Decimal("115.00")
     assert custo.custo_pct == Decimal("11.500")
-    assert custo.economia_brl == Decimal("0.00")
+    assert custo.economia == Decimal("0.00")
 
 
 def test_juntar_saques_dilui_a_taxa_fixa():
@@ -48,9 +48,9 @@ def test_juntar_saques_dilui_a_taxa_fixa():
     # Sacando a cada compra seriam 4 x R$ 115 = R$ 460, então a economia é R$ 300.
     custo = calcular_custo(Corretora(), Decimal(1000), PRECO, Rede.ONCHAIN, compras_por_saque=4)
 
-    assert custo.custo_total_brl == Decimal("160.00")
+    assert custo.custo_total == Decimal("160.00")
     assert custo.custo_pct == Decimal("4.000")
-    assert custo.economia_brl == Decimal("300.00")
+    assert custo.economia == Decimal("300.00")
 
 
 def test_lightning_usa_a_taxa_lightning():
@@ -60,7 +60,7 @@ def test_lightning_usa_a_taxa_lightning():
 
     # 197.000 - 200 = 196.800 sats = R$ 984 -> custo R$ 16
     assert custo.taxa_saque_sats == 200
-    assert custo.custo_total_brl == Decimal("16.00")
+    assert custo.custo_total == Decimal("16.00")
 
 
 def test_lightning_em_corretora_sem_lightning_e_inviavel():

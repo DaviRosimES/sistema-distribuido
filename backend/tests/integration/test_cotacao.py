@@ -29,7 +29,7 @@ def test_get_cotacao_devolve_preco_fonte_e_horario(client, com_fontes):
 
     assert response.status_code == 200
     assert response.json() == {
-        "preco_btc_brl": 343635.12,
+        "preco_btc": 343635.12,
         "fonte": "Binance",
         "consultada_em": "2026-11-25T12:00:00Z",
     }

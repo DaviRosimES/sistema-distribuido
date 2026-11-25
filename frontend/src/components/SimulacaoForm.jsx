@@ -7,8 +7,8 @@ import { Campo } from "./Campo";
 
 const INICIAL = {
   descricao: "",
-  valor_brl: "",
-  preco_btc_brl: "",
+  valor: "",
+  preco_btc: "",
   rede: "onchain",
   compras_por_saque: "1",
   custo_alvo_pct: "1",
@@ -39,9 +39,9 @@ export function SimulacaoForm({ onSimular }) {
       const cotacao = await obterCotacao();
       setForm((atual) => ({
         ...atual,
-        preco_btc_brl: formatarDecimal(cotacao.preco_btc_brl),
+        preco_btc: formatarDecimal(cotacao.preco_btc),
       }));
-      setErros((atuais) => ({ ...atuais, preco_btc_brl: undefined }));
+      setErros((atuais) => ({ ...atuais, preco_btc: undefined }));
       setCotacaoInfo(
         `Cotação da ${cotacao.fonte} às ${formatarHora(cotacao.consultada_em)}.`,
       );
@@ -90,7 +90,7 @@ export function SimulacaoForm({ onSimular }) {
           rotulo="Valor por compra (R$)"
           inputMode="decimal"
           placeholder="1.000,00"
-          {...campo("valor_brl")}
+          {...campo("valor")}
         />
         <div className="space-y-2">
           <Campo
@@ -98,7 +98,7 @@ export function SimulacaoForm({ onSimular }) {
             inputMode="decimal"
             placeholder="500.000,00"
             ajuda="Usado pra converter as taxas em sats"
-            {...campo("preco_btc_brl")}
+            {...campo("preco_btc")}
           />
           <button
             type="button"
