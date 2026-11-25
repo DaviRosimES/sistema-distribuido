@@ -1,68 +1,58 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "../../src/App";
-import { API_URL, ERRO_CONEXAO } from "../../src/services/tarefas";
+import { API_URL, ERRO_CONEXAO } from "../../src/services/api";
 import { criarApiFalsa } from "../helpers/api";
+import { simulacao } from "../helpers/simulacao";
 
-// O App é renderizado inteiro (formulário + lista + serviço) e só o fetch é trocado
+// O App é renderizado inteiro (formulários + listas + serviços) e só o fetch é trocado
 // pela API falsa. Os testes olham o que aparece na tela e quais requisições saíram.
-function renderizarApp(tarefasIniciais = []) {
-  const api = criarApiFalsa(tarefasIniciais);
+function renderizarApp(dadosIniciais) {
+  const api = criarApiFalsa(dadosIniciais);
   vi.stubGlobal("fetch", api.fetch);
   const user = userEvent.setup();
   render(<App />);
   return { user, api };
 }
 
-async function cadastrar(user, titulo, descricao = "") {
-  await user.type(screen.getByLabelText("Título"), titulo);
-  if (descricao) {
-    await user.type(screen.getByLabelText("Descrição"), descricao);
-  }
-  await user.click(screen.getByRole("button", { name: "Adicionar" }));
+async function abrirCorretoras(user) {
+  await user.click(await screen.findByRole("tab", { name: "Corretoras" }));
+}
+
+function chamadas(api, metodo) {
+  return api.fetch.mock.calls.filter(
+    ([, opcoes]) => (opcoes?.method ?? "GET") === metodo,
+  );
 }
 
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("App carregando as tarefas", () => {
-  it("mostra 'Carregando tarefas...' enquanto a API não responde", () => {
+describe("App carregando os dados", () => {
+  it("mostra 'Carregando dados...' enquanto a API não responde", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() => new Promise(() => {})),
     );
     render(<App />);
 
-    expect(screen.getByText("Carregando tarefas...")).toBeInTheDocument();
-    expect(
-      screen.queryByText("Nenhuma tarefa cadastrada."),
-    ).not.toBeInTheDocument();
+    expect(screen.getByText("Carregando dados...")).toBeInTheDocument();
   });
 
-  it("mostra as tarefas que vieram da API", async () => {
-    renderizarApp([
-      { id: 1, titulo: "Estudar", descricao: "Prática 7" },
-      { id: 2, titulo: "Revisar" },
-    ]);
+  it("busca corretoras e simulações e mostra o histórico", async () => {
+    const { api } = renderizarApp({
+      corretoras: [{ id: 1 }],
+      simulacoes: [simulacao({ descricao: "Compra de novembro" })],
+    });
 
-    const linhas = await screen.findAllByRole("listitem");
-
-    expect(linhas).toHaveLength(2);
-    expect(linhas[0]).toHaveTextContent("Estudar");
-    expect(linhas[0]).toHaveTextContent("Prática 7");
-    expect(linhas[1]).toHaveTextContent("Revisar");
-    expect(screen.queryByText("Carregando tarefas...")).not.toBeInTheDocument();
-  });
-
-  it("mostra a lista vazia quando a API não tem tarefas", async () => {
-    const { api } = renderizarApp();
-
+    expect(await screen.findByText("Compra de novembro")).toBeInTheDocument();
     expect(
-      await screen.findByText("Nenhuma tarefa cadastrada."),
+      screen.getByText("A comparação considera as 1 corretoras ativas."),
     ).toBeInTheDocument();
-    expect(api.fetch).toHaveBeenCalledWith(`${API_URL}/tarefas`, undefined);
+    expect(api.fetch).toHaveBeenCalledWith(`${API_URL}/corretoras`, undefined);
+    expect(api.fetch).toHaveBeenCalledWith(`${API_URL}/simulacoes`, undefined);
   });
 
   it("mostra o erro de conexão quando a API está fora do ar", async () => {
@@ -73,161 +63,184 @@ describe("App carregando as tarefas", () => {
     render(<App />);
 
     expect(await screen.findByRole("alert")).toHaveTextContent(ERRO_CONEXAO);
-    expect(
-      screen.queryByText("Nenhuma tarefa cadastrada."),
-    ).not.toBeInTheDocument();
   });
 });
 
-describe("App cadastrando tarefas", () => {
-  it("envia o POST e mostra a tarefa criada na lista", async () => {
+describe("App gerenciando corretoras", () => {
+  it("cadastra uma corretora e mostra a confirmação", async () => {
     const { user, api } = renderizarApp();
-    await screen.findByText("Nenhuma tarefa cadastrada.");
-
-    await cadastrar(user, "Estudar", "Prática 7");
-
-    const linha = await screen.findByRole("listitem");
-    expect(linha).toHaveTextContent("Estudar");
-    expect(linha).toHaveTextContent("Prática 7");
-    expect(api.fetch).toHaveBeenCalledWith(
-      `${API_URL}/tarefas`,
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({ titulo: "Estudar", descricao: "Prática 7" }),
-      }),
-    );
-    expect(screen.getByLabelText("Título")).toHaveValue("");
-  });
-
-  it("coloca a tarefa nova no fim da lista", async () => {
-    const { user } = renderizarApp([{ id: 1, titulo: "Primeira" }]);
-    await screen.findByRole("listitem");
-
-    await cadastrar(user, "Segunda");
-
-    await waitFor(() => {
-      expect(screen.getAllByRole("listitem")).toHaveLength(2);
-    });
-    const titulos = screen
-      .getAllByRole("listitem")
-      .map((linha) => within(linha).getByText(/Primeira|Segunda/).textContent);
-    expect(titulos).toEqual(["Primeira", "Segunda"]);
-  });
-
-  it("mostra o erro 409 da API e mantém o que foi digitado", async () => {
-    const { user } = renderizarApp([{ id: 1, titulo: "Estudar" }]);
-    await screen.findByRole("listitem");
-
-    await cadastrar(user, "Estudar", "de novo");
-
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Já existe uma tarefa com esse título",
-    );
-    expect(screen.getByLabelText("Título")).toHaveValue("Estudar");
-    expect(screen.getByLabelText("Descrição")).toHaveValue("de novo");
-    expect(screen.getAllByRole("listitem")).toHaveLength(1);
-  });
-
-  it("não chama a API quando a validação do front barra o título", async () => {
-    const { user, api } = renderizarApp();
-    await screen.findByText("Nenhuma tarefa cadastrada.");
-
-    await cadastrar(user, "   ", "Só descrição");
-
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      "O título é obrigatório.",
-    );
-    // Só o GET da listagem, nenhum POST
-    expect(api.fetch).toHaveBeenCalledOnce();
-  });
-});
-
-describe("App alterando tarefas", () => {
-  it("marca como concluída mandando um PATCH", async () => {
-    const { user, api } = renderizarApp([{ id: 1, titulo: "Estudar" }]);
-
-    await user.click(await screen.findByRole("checkbox", { name: "Estudar" }));
-
-    await waitFor(() => {
-      expect(screen.getByRole("checkbox", { name: "Estudar" })).toBeChecked();
-    });
-    expect(api.fetch).toHaveBeenCalledWith(
-      `${API_URL}/tarefas/1`,
-      expect.objectContaining({
-        method: "PATCH",
-        body: JSON.stringify({ concluida: true }),
-      }),
-    );
-  });
-
-  it("edita com PUT mantendo o status de concluída", async () => {
-    const { user, api } = renderizarApp([
-      { id: 1, titulo: "Estudar", concluida: true },
-    ]);
-
-    await user.click(await screen.findByRole("button", { name: "Editar" }));
-    await user.clear(screen.getAllByLabelText("Título")[1]);
-    await user.type(screen.getAllByLabelText("Título")[1], "Revisar");
-    await user.click(screen.getByRole("button", { name: "Salvar" }));
-
+    await abrirCorretoras(user);
     expect(
-      await screen.findByRole("checkbox", { name: "Revisar" }),
-    ).toBeChecked();
-    expect(api.fetch).toHaveBeenCalledWith(
-      `${API_URL}/tarefas/1`,
-      expect.objectContaining({
-        method: "PUT",
-        body: JSON.stringify({
-          titulo: "Revisar",
-          descricao: null,
-          concluida: true,
-        }),
-      }),
-    );
-  });
-
-  it("mostra o 409 na edição quando o título já é de outra tarefa", async () => {
-    const { user } = renderizarApp([
-      { id: 1, titulo: "Estudar" },
-      { id: 2, titulo: "Revisar" },
-    ]);
-
-    const [, segunda] = await screen.findAllByRole("listitem");
-    await user.click(within(segunda).getByRole("button", { name: "Editar" }));
-    const campo = within(segunda).getByLabelText("Título");
-    await user.clear(campo);
-    await user.type(campo, "Estudar");
-    await user.click(within(segunda).getByRole("button", { name: "Salvar" }));
-
-    expect(await within(segunda).findByRole("alert")).toHaveTextContent(
-      "Já existe uma tarefa com esse título",
-    );
-    expect(campo).toHaveValue("Estudar");
-  });
-
-  it("remove com DELETE e volta pra lista vazia", async () => {
-    const { user, api } = renderizarApp([{ id: 1, titulo: "Estudar" }]);
-
-    await user.click(await screen.findByRole("button", { name: "Remover" }));
-
-    expect(
-      await screen.findByText("Nenhuma tarefa cadastrada."),
+      await screen.findByText(/Nenhuma corretora cadastrada/),
     ).toBeInTheDocument();
-    expect(api.fetch).toHaveBeenCalledWith(`${API_URL}/tarefas/1`, {
-      method: "DELETE",
+
+    await user.type(screen.getByLabelText("Nome"), "Corretora Nova");
+    await user.type(screen.getByLabelText("Taxa de negociação (%)"), "0,2");
+    await user.type(screen.getByLabelText("Spread (%)"), "0,5");
+    await user.type(
+      screen.getByLabelText("Taxa de saque on-chain (sats)"),
+      "1000",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Cadastrar corretora" }),
+    );
+
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      'Corretora "Corretora Nova" cadastrada.',
+    );
+    expect(
+      screen.getByRole("listitem", { name: "Corretora Nova" }),
+    ).toBeInTheDocument();
+    const [[url, opcoes]] = chamadas(api, "POST");
+    expect(url).toBe(`${API_URL}/corretoras`);
+    expect(JSON.parse(opcoes.body)).toMatchObject({
+      nome: "Corretora Nova",
+      spread_pct: 0.5,
     });
   });
 
-  it("mostra o 404 quando a tarefa já tinha sido removida em outra aba", async () => {
-    const { user, api } = renderizarApp([{ id: 1, titulo: "Estudar" }]);
-    await screen.findByRole("listitem");
-    // Some do "banco" sem passar pela tela
-    api.tarefas.splice(0, 1);
+  it("mostra o 409 da API no formulário", async () => {
+    const { user } = renderizarApp({
+      corretoras: [{ id: 1, nome: "Corretora A" }],
+    });
+    await abrirCorretoras(user);
 
-    await user.click(screen.getByRole("button", { name: "Remover" }));
+    await user.type(await screen.findByLabelText("Nome"), "corretora a");
+    await user.type(screen.getByLabelText("Taxa de negociação (%)"), "0");
+    await user.type(screen.getByLabelText("Spread (%)"), "0");
+    await user.type(
+      screen.getByLabelText("Taxa de saque on-chain (sats)"),
+      "0",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Cadastrar corretora" }),
+    );
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Tarefa 1 não encontrada",
+      "Já existe uma corretora com esse nome",
     );
+    expect(screen.getByLabelText("Nome")).toHaveValue("corretora a");
+  });
+
+  it("edita com PUT e desativa com PATCH", async () => {
+    const { user, api } = renderizarApp({
+      corretoras: [{ id: 1, nome: "Corretora A" }],
+    });
+    await abrirCorretoras(user);
+    const item = await screen.findByRole("listitem", { name: "Corretora A" });
+
+    await user.click(within(item).getByRole("button", { name: "Editar" }));
+    const edicao = screen.getByRole("form", { name: "Editar Corretora A" });
+    await user.clear(within(edicao).getByLabelText("Nome"));
+    await user.type(within(edicao).getByLabelText("Nome"), "Corretora B");
+    await user.click(within(edicao).getByRole("button", { name: "Salvar" }));
+    const editada = await screen.findByRole("listitem", {
+      name: "Corretora B",
+    });
+    await user.click(
+      within(editada).getByRole("button", { name: "Desativar" }),
+    );
+
+    expect(await within(editada).findByText("Inativa")).toBeInTheDocument();
+    expect(chamadas(api, "PUT")[0][0]).toBe(`${API_URL}/corretoras/1`);
+    expect(chamadas(api, "PATCH")[0][1].body).toBe(
+      JSON.stringify({ ativa: false }),
+    );
+  });
+
+  it("remove com DELETE e mostra o 404 se ela já tinha sido removida", async () => {
+    const { user, api } = renderizarApp({
+      corretoras: [
+        { id: 1, nome: "Corretora A" },
+        { id: 2, nome: "Corretora B" },
+      ],
+    });
+    await abrirCorretoras(user);
+    const primeira = await screen.findByRole("listitem", {
+      name: "Corretora A",
+    });
+
+    await user.click(within(primeira).getByRole("button", { name: "Remover" }));
+    expect(await screen.findByRole("status")).toHaveTextContent("removida");
+    expect(screen.queryByRole("listitem", { name: "Corretora A" })).toBeNull();
+
+    // Some do "banco" sem passar pela tela (outra aba, por exemplo)
+    api.dados.corretoras.splice(0, 1);
+    const segunda = screen.getByRole("listitem", { name: "Corretora B" });
+    await user.click(within(segunda).getByRole("button", { name: "Remover" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Corretora 2 não encontrada",
+    );
+  });
+});
+
+describe("App simulando", () => {
+  async function simular(user) {
+    await user.type(
+      await screen.findByLabelText("Valor por compra (R$)"),
+      "1000",
+    );
+    await user.type(screen.getByLabelText("Preço do BTC (R$)"), "500000");
+    await user.type(screen.getByLabelText("Descrição (opcional)"), "Teste");
+    await user.click(
+      screen.getByRole("button", { name: "Comparar corretoras" }),
+    );
+  }
+
+  it("cria a simulação e já mostra o ranking no topo do histórico", async () => {
+    const { user } = renderizarApp({
+      corretoras: [{ id: 1 }],
+      simulacoes: [simulacao({ id: 7, descricao: "Antiga" })],
+    });
+
+    await simular(user);
+
+    const [nova, antiga] = await screen.findAllByRole("listitem");
+    expect(nova).toHaveAccessibleName("Teste");
+    expect(within(nova).getByRole("table")).toBeInTheDocument();
+    expect(within(nova).getByText("Mais barata")).toBeInTheDocument();
+    expect(antiga).toHaveAccessibleName("Antiga");
+  });
+
+  it("mostra o 422 quando não há corretora ativa", async () => {
+    const { user } = renderizarApp();
+    expect(
+      await screen.findByText(/Nenhuma corretora ativa: cadastre ou ative uma/),
+    ).toBeInTheDocument();
+
+    await simular(user);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Cadastre pelo menos uma corretora ativa antes de simular",
+    );
+  });
+
+  it("edita a descrição e remove uma simulação do histórico", async () => {
+    const { user, api } = renderizarApp({
+      simulacoes: [simulacao({ id: 7, descricao: "Antiga" })],
+    });
+    const item = await screen.findByRole("listitem", { name: "Antiga" });
+
+    await user.click(
+      within(item).getByRole("button", { name: "Editar descrição" }),
+    );
+    await user.clear(within(item).getByLabelText("Descrição"));
+    await user.type(within(item).getByLabelText("Descrição"), "Renomeada");
+    await user.click(within(item).getByRole("button", { name: "Salvar" }));
+    const renomeada = await screen.findByRole("listitem", {
+      name: "Renomeada",
+    });
+    await user.click(
+      within(renomeada).getByRole("button", { name: "Remover" }),
+    );
+
+    expect(
+      await screen.findByText("Nenhuma simulação salva."),
+    ).toBeInTheDocument();
+    expect(chamadas(api, "PATCH")[0][1].body).toBe(
+      JSON.stringify({ descricao: "Renomeada" }),
+    );
+    expect(chamadas(api, "DELETE")[0][0]).toBe(`${API_URL}/simulacoes/7`);
   });
 });
