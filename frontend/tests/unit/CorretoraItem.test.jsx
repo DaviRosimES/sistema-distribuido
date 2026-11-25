@@ -53,6 +53,7 @@ describe("CorretoraItem", () => {
 
     await user.click(screen.getByRole("button", { name: "Desativar" }));
     await user.click(screen.getByRole("button", { name: "Remover" }));
+    await user.click(screen.getByRole("button", { name: "Confirmar remoção" }));
 
     expect(acoes.onAlternarAtiva).toHaveBeenCalledWith(CORRETORA);
     expect(acoes.onRemover).toHaveBeenCalledWith(CORRETORA);

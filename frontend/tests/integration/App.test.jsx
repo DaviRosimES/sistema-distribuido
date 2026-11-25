@@ -161,6 +161,9 @@ describe("App gerenciando corretoras", () => {
     });
 
     await user.click(within(primeira).getByRole("button", { name: "Remover" }));
+    await user.click(
+      within(primeira).getByRole("button", { name: "Confirmar remoção" }),
+    );
     expect(await screen.findByRole("status")).toHaveTextContent("removida");
     expect(screen.queryByRole("listitem", { name: "Corretora A" })).toBeNull();
 
@@ -168,6 +171,9 @@ describe("App gerenciando corretoras", () => {
     api.dados.corretoras.splice(0, 1);
     const segunda = screen.getByRole("listitem", { name: "Corretora B" });
     await user.click(within(segunda).getByRole("button", { name: "Remover" }));
+    await user.click(
+      within(segunda).getByRole("button", { name: "Confirmar remoção" }),
+    );
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Corretora 2 não encontrada",
@@ -233,6 +239,9 @@ describe("App simulando", () => {
     });
     await user.click(
       within(renomeada).getByRole("button", { name: "Remover" }),
+    );
+    await user.click(
+      within(renomeada).getByRole("button", { name: "Confirmar remoção" }),
     );
 
     expect(

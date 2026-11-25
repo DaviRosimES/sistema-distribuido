@@ -1,10 +1,4 @@
-import {
-  ChevronDown,
-  ChevronUp,
-  Pencil,
-  RefreshCw,
-  Trash2,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, Pencil, RefreshCw } from "lucide-react";
 import { useId, useState } from "react";
 import {
   formatarData,
@@ -14,7 +8,6 @@ import {
 } from "../format";
 import {
   botao,
-  botaoPerigo,
   botaoPrimario,
   entrada,
   numero,
@@ -24,6 +17,7 @@ import {
 } from "../ui";
 import { DESCRICAO_SIMULACAO_MAX_LENGTH } from "../validation";
 import { Aviso } from "./Aviso";
+import { BotaoRemover } from "./BotaoRemover";
 import { RankingTabela } from "./RankingTabela";
 
 const NOME_DA_REDE = { onchain: "on-chain", lightning: "Lightning" };
@@ -221,15 +215,11 @@ export function SimulacaoItem({
           <RefreshCw aria-hidden="true" className="size-3.5" />
           Recalcular com taxas atuais
         </button>
-        <button
-          type="button"
-          onClick={() => executar(() => onRemover(simulacao))}
+        <BotaoRemover
+          onConfirmar={() => executar(() => onRemover(simulacao))}
           disabled={ocupado}
-          className={`${botaoPerigo} sm:ml-auto`}
-        >
-          <Trash2 aria-hidden="true" className="size-3.5" />
-          Remover
-        </button>
+          className="sm:ml-auto"
+        />
       </div>
     </li>
   );

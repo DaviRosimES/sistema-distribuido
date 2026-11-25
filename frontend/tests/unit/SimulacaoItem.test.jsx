@@ -78,6 +78,7 @@ describe("SimulacaoItem", () => {
     acoes.onRemover.mockRejectedValue(new Error("Simulação 1 não encontrada"));
 
     await user.click(screen.getByRole("button", { name: "Remover" }));
+    await user.click(screen.getByRole("button", { name: "Confirmar remoção" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Simulação 1 não encontrada",

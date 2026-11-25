@@ -1,7 +1,8 @@
-import { Pencil, Power, Trash2, Zap } from "lucide-react";
+import { Pencil, Power, Zap } from "lucide-react";
 import { useState } from "react";
 import { formatarPct, formatarSats } from "../format";
-import { botao, botaoPerigo, numeroMono } from "../ui";
+import { botao, numeroMono } from "../ui";
+import { BotaoRemover } from "./BotaoRemover";
 import { CorretoraForm } from "./CorretoraForm";
 
 function Taxa({ nome, children }) {
@@ -117,15 +118,10 @@ export function CorretoraItem({
           <Power aria-hidden="true" className="size-3.5" />
           {corretora.ativa ? "Desativar" : "Ativar"}
         </button>
-        <button
-          type="button"
-          onClick={() => executar(() => onRemover(corretora))}
+        <BotaoRemover
+          onConfirmar={() => executar(() => onRemover(corretora))}
           disabled={ocupado}
-          className={botaoPerigo}
-        >
-          <Trash2 aria-hidden="true" className="size-3.5" />
-          Remover
-        </button>
+        />
       </div>
     </li>
   );

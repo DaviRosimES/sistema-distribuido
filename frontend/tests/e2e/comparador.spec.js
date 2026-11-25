@@ -107,6 +107,7 @@ test("edita, desativa e remove uma corretora, e tudo continua depois do F5", asy
   await expect(page.getByRole("listitem", { name: nome })).toHaveCount(0);
 
   await item.getByRole("button", { name: "Remover" }).click();
+  await item.getByRole("button", { name: "Confirmar remoção" }).click();
   await expect(item).toHaveCount(0);
   await recarregar(page, "Corretoras");
   await expect(page.getByRole("listitem", { name: novoNome })).toHaveCount(0);
@@ -148,6 +149,7 @@ test("simula, salva no histórico e edita e remove a simulação", async ({
   await expect(renomeada).toBeVisible();
 
   await renomeada.getByRole("button", { name: "Remover" }).click();
+  await renomeada.getByRole("button", { name: "Confirmar remoção" }).click();
   await expect(renomeada).toHaveCount(0);
   await recarregar(page, "Simular");
   await expect(page.getByRole("listitem", { name: novaDescricao })).toHaveCount(
