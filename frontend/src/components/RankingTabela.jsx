@@ -1,5 +1,13 @@
 import { formatarPct, formatarReais, formatarSats } from "../format";
 
+// null: só as taxas percentuais já passam do alvo. 0: sem taxa fixa nem saque mínimo,
+// então qualquer valor fica dentro do alvo.
+function textoValorMinimo(valor) {
+  if (valor === null) return "Impossível";
+  if (valor === 0) return "Qualquer valor";
+  return formatarReais(valor);
+}
+
 // Tabela com o resultado de uma simulação. O ranking já vem ordenado da API:
 // viáveis da mais barata pra mais cara, inviáveis no fim com o motivo.
 export function RankingTabela({ simulacao }) {
@@ -79,9 +87,7 @@ export function RankingTabela({ simulacao }) {
                 </td>
               )}
               <td className="p-2 text-right">
-                {item.valor_minimo_brl === null
-                  ? "Impossível"
-                  : formatarReais(item.valor_minimo_brl)}
+                {textoValorMinimo(item.valor_minimo_brl)}
               </td>
             </tr>
           ))}

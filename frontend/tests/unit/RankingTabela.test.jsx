@@ -77,4 +77,16 @@ describe("RankingTabela", () => {
 
     expect(linhas()[0]).toHaveTextContent("Impossível");
   });
+
+  it("diz 'Qualquer valor' quando não há taxa fixa a diluir", () => {
+    render(
+      <RankingTabela
+        simulacao={simulacao({
+          ranking: [itemRanking({ valor_minimo_brl: 0 })],
+        })}
+      />,
+    );
+
+    expect(linhas()[0]).toHaveTextContent("Qualquer valor");
+  });
 });
