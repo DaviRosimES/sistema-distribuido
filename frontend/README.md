@@ -1,8 +1,8 @@
 # Frontend
 
-Gerenciador de tarefas em React + Vite, estilizado com Tailwind CSS. As tarefas vêm da API
-FastAPI do `backend/` e ficam salvas no PostgreSQL, então continuam lá depois de recarregar a
-página.
+Interface do Comparador de Autocustódia em React + Vite, estilizada com Tailwind CSS. As
+corretoras e as simulações vêm da API FastAPI do `backend/` e ficam salvas no PostgreSQL,
+então continuam lá depois de recarregar a página.
 
 Requer Node.js 22 ou superior.
 
@@ -12,25 +12,33 @@ Requer Node.js 22 ou superior.
 frontend/
 ├── src/
 │   ├── components/
-│   │   ├── TarefaForm.jsx   # formulário de cadastro e de edição, com validação
-│   │   ├── TarefaItem.jsx   # uma tarefa: concluir, editar e remover
-│   │   └── TarefaList.jsx   # listagem e estado vazio
+│   │   ├── Campo.jsx           # rótulo + input + ajuda/erro (acessível)
+│   │   ├── Aviso.jsx           # mensagens de erro (alert) e sucesso (status)
+│   │   ├── CorretoraForm.jsx   # cadastro e edição de corretora, com validação
+│   │   ├── CorretoraItem.jsx   # uma corretora: editar, ativar/desativar e remover
+│   │   ├── CorretoraList.jsx   # listagem e estado vazio
+│   │   ├── SimulacaoForm.jsx   # parâmetros da simulação
+│   │   ├── RankingTabela.jsx   # resultado: custo por corretora, inviáveis e valor mínimo
+│   │   └── SimulacaoItem.jsx   # item do histórico: ver ranking, editar, recalcular, remover
 │   ├── services/
-│   │   └── tarefas.js       # todas as chamadas HTTP da API de tarefas
-│   ├── App.jsx              # carrega a lista e liga os componentes à API
-│   ├── validation.js        # regras de validação (mesmas do backend)
-│   ├── index.css            # importa o Tailwind
+│   │   ├── api.js              # request(): fetch + tratamento de erros
+│   │   ├── corretoras.js       # chamadas de /corretoras
+│   │   └── simulacoes.js       # chamadas de /simulacoes
+│   ├── App.jsx                 # abas, carregamento inicial e estado da tela
+│   ├── validation.js           # regras de validação (mesmas do backend)
+│   ├── format.js               # R$, sats, % e datas em pt-BR
+│   ├── index.css               # importa o Tailwind
 │   └── main.jsx
 ├── tests/
-│   ├── setup.js             # configuração do Vitest (jest-dom + cleanup)
-│   ├── helpers/api.js       # API falsa que responde ao fetch mockado
-│   ├── unit/                # validação, serviço e componentes isolados
-│   ├── integration/         # App inteiro com fetch mockado
-│   └── e2e/                 # Playwright contra a stack completa
+│   ├── setup.js                # configuração do Vitest (jest-dom + cleanup)
+│   ├── helpers/                # API falsa e dados de exemplo
+│   ├── unit/                   # validação, serviços e componentes isolados
+│   ├── integration/            # App inteiro com fetch mockado
+│   └── e2e/                    # Playwright contra a stack completa
 ├── Dockerfile
 ├── biome.json
 ├── playwright.config.js
-└── vite.config.js           # Vite + Tailwind + Vitest
+└── vite.config.js              # Vite + Tailwind + Vitest
 ```
 
 ## Como rodar
@@ -55,14 +63,15 @@ A URL da API vem da variável `VITE_API_URL` (padrão `http://localhost:8000`). 
 
 ## Chamadas à API
 
-Todas as chamadas ficam em `src/services/tarefas.js`, que tem uma função pra cada método da
-API (`listarTarefas`, `buscarTarefa`, `criarTarefa`, `substituirTarefa`, `atualizarTarefa` e
-`removerTarefa`). Elas passam pela função `request`, que trata três casos:
+As chamadas ficam em `src/services/`: uma função por operação de cada recurso
+(`listarCorretoras`, `criarCorretora`, `substituirCorretora`, `atualizarCorretora`,
+`removerCorretora`, `listarSimulacoes`, `criarSimulacao`, `atualizarSimulacao` e
+`removerSimulacao`). Todas passam pela `request` de `api.js`, que trata três casos:
 
 | Situação         | O que acontece                                                     |
 | ---------------- | ------------------------------------------------------------------ |
 | API inacessível  | o `fetch` rejeita e o erro vira "Não foi possível conectar à API." |
-| Resposta 4xx/5xx | usa o `detail` da API (404, 409) ou uma mensagem padrão            |
+| Resposta 4xx/5xx | usa o `detail` da API (404, 409, 422) ou uma mensagem padrão       |
 | Sucesso          | devolve o JSON (ou `null` no 204 do DELETE)                        |
 
 ## Testes e qualidade
@@ -79,10 +88,11 @@ API (`listarTarefas`, `buscarTarefa`, `criarTarefa`, `substituirTarefa`, `atuali
 | `make check-all`         |                                        | Backend + frontend + E2E                           |
 
 Os testes do Vitest não dependem do backend: o `fetch` é trocado por uma API falsa
-(`tests/helpers/api.js`) que responde como a de verdade, inclusive com 404 e 409.
+(`tests/helpers/api.js`) que responde como a de verdade, inclusive com 404, 409 e 422.
 
-O E2E não usa mock nenhum: o navegador cadastra pela tela, a tarefa passa pela API e fica no
-PostgreSQL, e o teste recarrega a página pra provar que ela continua lá. O `make e2e` sobe uma
+O E2E não usa mock nenhum: o navegador cadastra corretoras e simulações pela tela, tudo passa
+pela API e fica no PostgreSQL, e o teste recarrega a página pra provar que os dados continuam
+lá. O `make e2e` sobe uma
 stack separada (portas 8001 e 5174), roda os testes e derruba tudo no final. Para rodar contra
 a stack de desenvolvimento, use `make frontend-test-e2e` com ela no ar (o endereço vem de
 `E2E_BASE_URL`, padrão `http://localhost:5173`).
