@@ -1,4 +1,7 @@
+from datetime import UTC, datetime
+
 from app.models.corretora import CorretoraModel
+from app.models.simulacao import SimulacaoModel
 from app.models.tarefa import TarefaModel
 
 
@@ -61,3 +64,26 @@ class FakeCorretoraRepository:
 
     def remover(self, corretora: CorretoraModel) -> None:
         del self.corretoras[corretora.id]
+
+
+class FakeSimulacaoRepository:
+    def __init__(self):
+        self.simulacoes: dict[int, SimulacaoModel] = {}
+        self._proximo_id = 1
+
+    def listar(self) -> list[SimulacaoModel]:
+        return sorted(self.simulacoes.values(), key=lambda s: s.id, reverse=True)
+
+    def buscar(self, simulacao_id: int) -> SimulacaoModel | None:
+        return self.simulacoes.get(simulacao_id)
+
+    def salvar(self, simulacao: SimulacaoModel) -> SimulacaoModel:
+        if simulacao.id is None:
+            simulacao.id = self._proximo_id
+            simulacao.criada_em = datetime.now(UTC)
+            self._proximo_id += 1
+        self.simulacoes[simulacao.id] = simulacao
+        return simulacao
+
+    def remover(self, simulacao: SimulacaoModel) -> None:
+        del self.simulacoes[simulacao.id]
