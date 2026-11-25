@@ -1,10 +1,75 @@
+import {
+  ChevronDown,
+  ChevronUp,
+  Pencil,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
 import { useId, useState } from "react";
-import { formatarData, formatarMoeda, formatarPct } from "../format";
+import {
+  formatarData,
+  formatarMoeda,
+  formatarPct,
+  formatarSats,
+} from "../format";
+import {
+  botao,
+  botaoPerigo,
+  botaoPrimario,
+  entrada,
+  numero,
+  numeroMono,
+  painel,
+  rotulo,
+} from "../ui";
 import { DESCRICAO_SIMULACAO_MAX_LENGTH } from "../validation";
 import { Aviso } from "./Aviso";
 import { RankingTabela } from "./RankingTabela";
 
 const NOME_DA_REDE = { onchain: "on-chain", lightning: "Lightning" };
+
+// A resposta da simulação em destaque: onde comprar e quanto chega na carteira
+function Destaque({ simulacao, melhor }) {
+  const { moeda, compras_por_saque } = simulacao;
+  const valorCiclo = simulacao.valor * compras_por_saque;
+  return (
+    <div className="space-y-1">
+      <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+        Melhor opção
+      </p>
+      <p className="text-xl font-semibold tracking-tight sm:text-2xl">
+        <span>{melhor.corretora_nome}</span>
+        <span className="text-zinc-300 dark:text-zinc-600"> · </span>
+        <span className={`${numeroMono} text-btc-texto dark:text-btc`}>
+          {formatarSats(melhor.sats_recebidos)}
+        </span>{" "}
+        <span className="text-base font-normal text-zinc-500 dark:text-zinc-400">
+          na carteira
+        </span>
+      </p>
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        Custo de{" "}
+        <span className={numero}>
+          {formatarMoeda(melhor.custo_total, moeda)} (
+          {formatarPct(melhor.custo_pct)})
+        </span>{" "}
+        sobre <span className={numero}>{formatarMoeda(valorCiclo, moeda)}</span>
+        {compras_por_saque > 1 && ` em ${compras_por_saque} compras`}
+        {melhor.economia > 0 && (
+          <>
+            {" "}
+            —{" "}
+            <span className={numero}>
+              {formatarMoeda(melhor.economia, moeda)}
+            </span>{" "}
+            a menos que sacar a cada compra
+          </>
+        )}
+        .
+      </p>
+    </div>
+  );
+}
 
 export function SimulacaoItem({
   simulacao,
@@ -59,34 +124,24 @@ export function SimulacaoItem({
   }
 
   return (
-    <li
-      aria-label={titulo}
-      className="space-y-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm"
-    >
+    <li aria-label={titulo} className={`${painel} space-y-4 p-4 sm:p-5`}>
       {editando ? (
         <form
           onSubmit={salvarDescricao}
           className="flex flex-col gap-2 sm:flex-row sm:items-end"
         >
-          <div className="flex-1 space-y-1">
-            <label
-              htmlFor={`${id}-descricao`}
-              className="block text-sm font-medium"
-            >
+          <div className="flex-1 space-y-1.5">
+            <label htmlFor={`${id}-descricao`} className={rotulo}>
               Descrição
             </label>
             <input
               id={`${id}-descricao`}
               value={descricao}
               onChange={(event) => setDescricao(event.target.value)}
-              className="w-full rounded border border-slate-300 dark:border-slate-600 p-2"
+              className={entrada}
             />
           </div>
-          <button
-            type="submit"
-            disabled={ocupado}
-            className="rounded bg-orange-600 px-3 py-2 text-sm font-medium text-white hover:bg-orange-700 disabled:opacity-60"
-          >
+          <button type="submit" disabled={ocupado} className={botaoPrimario}>
             Salvar
           </button>
           <button
@@ -95,52 +150,52 @@ export function SimulacaoItem({
               setEditando(false);
               setDescricao(simulacao.descricao ?? "");
             }}
-            className="rounded border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
+            className={`${botao} justify-center py-2`}
           >
             Cancelar
           </button>
         </form>
       ) : (
-        <div>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h3 className="font-semibold break-words">{titulo}</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className={`text-xs text-zinc-500 dark:text-zinc-400 ${numero}`}>
             {formatarData(simulacao.criada_em)}
           </p>
         </div>
       )}
 
-      <p className="text-sm">
+      <p className="-mt-2 text-sm text-zinc-500 dark:text-zinc-400">
         {formatarMoeda(simulacao.valor, simulacao.moeda)} por compra · BTC a{" "}
         {formatarMoeda(simulacao.preco_btc, simulacao.moeda)} · saque{" "}
         {NOME_DA_REDE[simulacao.rede]}
         {simulacao.compras_por_saque > 1 &&
           ` a cada ${simulacao.compras_por_saque} compras`}
       </p>
-      <p className="text-sm">
-        {melhor ? (
-          <>
-            Melhor opção: <strong>{melhor.corretora_nome}</strong> com custo de{" "}
-            {formatarMoeda(melhor.custo_total, simulacao.moeda)} (
-            {formatarPct(melhor.custo_pct)})
-          </>
-        ) : (
-          <strong className="text-red-700 dark:text-red-300">
-            Nenhuma corretora viável para esses parâmetros
-          </strong>
-        )}
-      </p>
+
+      {melhor ? (
+        <Destaque simulacao={simulacao} melhor={melhor} />
+      ) : (
+        <p className="text-sm font-medium text-red-700 dark:text-red-400">
+          Nenhuma corretora viável para esses parâmetros
+        </p>
+      )}
 
       <Aviso>{erro}</Aviso>
 
       {mostrarRanking && <RankingTabela simulacao={simulacao} />}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
         <button
           type="button"
           onClick={() => setMostrarRanking((atual) => !atual)}
           aria-expanded={mostrarRanking}
-          className="rounded border border-slate-300 dark:border-slate-600 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
+          className={botao}
         >
+          {mostrarRanking ? (
+            <ChevronUp aria-hidden="true" className="size-4" />
+          ) : (
+            <ChevronDown aria-hidden="true" className="size-4" />
+          )}
           {mostrarRanking ? "Ocultar ranking" : "Ver ranking"}
         </button>
         {!editando && (
@@ -151,8 +206,9 @@ export function SimulacaoItem({
               setEditando(true);
             }}
             disabled={ocupado}
-            className="rounded border border-slate-300 dark:border-slate-600 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
+            className={botao}
           >
+            <Pencil aria-hidden="true" className="size-3.5" />
             Editar descrição
           </button>
         )}
@@ -160,16 +216,18 @@ export function SimulacaoItem({
           type="button"
           onClick={recalcular}
           disabled={ocupado}
-          className="rounded border border-slate-300 dark:border-slate-600 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
+          className={botao}
         >
+          <RefreshCw aria-hidden="true" className="size-3.5" />
           Recalcular com taxas atuais
         </button>
         <button
           type="button"
           onClick={() => executar(() => onRemover(simulacao))}
           disabled={ocupado}
-          className="rounded border border-red-300 dark:border-red-800 px-3 py-1 text-sm text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-60"
+          className={`${botaoPerigo} sm:ml-auto`}
         >
+          <Trash2 aria-hidden="true" className="size-3.5" />
           Remover
         </button>
       </div>
