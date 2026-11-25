@@ -63,7 +63,7 @@ export function SimulacaoItem({
   return (
     <li
       aria-label={titulo}
-      className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+      className="space-y-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm"
     >
       {editando ? (
         <form
@@ -81,7 +81,7 @@ export function SimulacaoItem({
               id={`${id}-descricao`}
               value={descricao}
               onChange={(event) => setDescricao(event.target.value)}
-              className="w-full rounded border border-slate-300 p-2"
+              className="w-full rounded border border-slate-300 dark:border-slate-600 p-2"
             />
           </div>
           <button
@@ -97,7 +97,7 @@ export function SimulacaoItem({
               setEditando(false);
               setDescricao(simulacao.descricao ?? "");
             }}
-            className="rounded border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
+            className="rounded border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             Cancelar
           </button>
@@ -105,7 +105,7 @@ export function SimulacaoItem({
       ) : (
         <div>
           <h3 className="font-semibold break-words">{titulo}</h3>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             {formatarData(simulacao.criada_em)}
           </p>
         </div>
@@ -126,7 +126,7 @@ export function SimulacaoItem({
             {formatarPct(melhor.custo_pct)})
           </>
         ) : (
-          <strong className="text-red-700">
+          <strong className="text-red-700 dark:text-red-300">
             Nenhuma corretora viável para esses parâmetros
           </strong>
         )}
@@ -141,7 +141,7 @@ export function SimulacaoItem({
           type="button"
           onClick={() => setMostrarRanking((atual) => !atual)}
           aria-expanded={mostrarRanking}
-          className="rounded border border-slate-300 px-3 py-1 text-sm hover:bg-slate-100"
+          className="rounded border border-slate-300 dark:border-slate-600 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
         >
           {mostrarRanking ? "Ocultar ranking" : "Ver ranking"}
         </button>
@@ -153,7 +153,7 @@ export function SimulacaoItem({
               setEditando(true);
             }}
             disabled={ocupado}
-            className="rounded border border-slate-300 px-3 py-1 text-sm hover:bg-slate-100 disabled:opacity-60"
+            className="rounded border border-slate-300 dark:border-slate-600 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
           >
             Editar descrição
           </button>
@@ -162,7 +162,7 @@ export function SimulacaoItem({
           type="button"
           onClick={recalcular}
           disabled={ocupado}
-          className="rounded border border-slate-300 px-3 py-1 text-sm hover:bg-slate-100 disabled:opacity-60"
+          className="rounded border border-slate-300 dark:border-slate-600 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
         >
           Recalcular com taxas atuais
         </button>
@@ -170,7 +170,7 @@ export function SimulacaoItem({
           type="button"
           onClick={() => executar(() => onRemover(simulacao))}
           disabled={ocupado}
-          className="rounded border border-red-300 px-3 py-1 text-sm text-red-700 hover:bg-red-50 disabled:opacity-60"
+          className="rounded border border-red-300 dark:border-red-800 px-3 py-1 text-sm text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-60"
         >
           Remover
         </button>

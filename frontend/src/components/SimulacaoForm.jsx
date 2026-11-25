@@ -83,7 +83,7 @@ export function SimulacaoForm({ onSimular }) {
       onSubmit={handleSubmit}
       noValidate
       aria-label="Nova simulação"
-      className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+      className="space-y-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm"
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <Campo
@@ -104,7 +104,7 @@ export function SimulacaoForm({ onSimular }) {
             type="button"
             onClick={usarCotacaoAtual}
             disabled={buscandoCotacao}
-            className="rounded border border-slate-300 px-3 py-1 text-sm hover:bg-slate-100 disabled:opacity-60"
+            className="rounded border border-slate-300 dark:border-slate-600 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
           >
             {buscandoCotacao ? "Buscando cotação..." : "Usar cotação atual"}
           </button>
@@ -119,7 +119,7 @@ export function SimulacaoForm({ onSimular }) {
             id={`${id}-rede`}
             value={form.rede}
             onChange={alterar("rede")}
-            className="w-full rounded border border-slate-300 bg-white p-2"
+            className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2"
           >
             <option value="onchain">On-chain</option>
             <option value="lightning">Lightning</option>

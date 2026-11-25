@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+/* O modo escuro é ligado pela classe "dark" no <html> (e não só pela preferência do sistema),
+   assim o botão do cabeçalho consegue trocar o tema. Ver src/tema.js. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Avisa o navegador do tema, pra barra de rolagem e os controles nativos (select,
+   checkbox) também ficarem escuros */
+html.dark {
+  color-scheme: dark;
+}

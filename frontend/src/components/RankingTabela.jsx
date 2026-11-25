@@ -8,10 +8,10 @@ export function RankingTabela({ simulacao }) {
 
   return (
     // overflow-x-auto: no celular só a tabela rola de lado, a página não
-    <div className="overflow-x-auto rounded-lg border border-slate-200">
+    <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
       <table className="w-full min-w-[640px] text-left text-sm">
         <caption className="sr-only">Ranking de custo por corretora</caption>
-        <thead className="bg-slate-100 text-slate-600">
+        <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
           <tr>
             <th scope="col" className="p-2">
               #
@@ -37,7 +37,7 @@ export function RankingTabela({ simulacao }) {
           {ranking.map((item, posicao) => (
             <tr
               key={item.corretora_id}
-              className={`border-t border-slate-200 ${posicao === 0 && item.viavel ? "bg-green-50" : ""} ${item.viavel ? "" : "text-slate-500"}`}
+              className={`border-t border-slate-200 dark:border-slate-700 ${posicao === 0 && item.viavel ? "bg-green-50 dark:bg-green-950/40" : ""} ${item.viavel ? "" : "text-slate-500 dark:text-slate-400"}`}
             >
               <td className="p-2">{item.viavel ? `${posicao + 1}º` : "—"}</td>
               <th scope="row" className="p-2 font-medium">
@@ -66,7 +66,7 @@ export function RankingTabela({ simulacao }) {
                     Spread {formatarReais(item.spread_brl)} · Saque{" "}
                     {formatarReais(item.taxa_saque_brl)}
                     {juntaSaques && item.economia_brl > 0 && (
-                      <span className="block text-green-700">
+                      <span className="block text-green-700 dark:text-green-400">
                         Economia de {formatarReais(item.economia_brl)} juntando{" "}
                         {compras_por_saque} compras por saque
                       </span>

@@ -41,17 +41,17 @@ export function CorretoraItem({
   return (
     <li
       aria-label={corretora.nome}
-      className={`space-y-3 rounded-lg border bg-white p-4 shadow-sm ${corretora.ativa ? "border-slate-200" : "border-dashed border-slate-300 opacity-75"}`}
+      className={`space-y-3 rounded-lg border bg-white dark:bg-slate-900 p-4 shadow-sm ${corretora.ativa ? "border-slate-200 dark:border-slate-700" : "border-dashed border-slate-300 dark:border-slate-600 opacity-75"}`}
     >
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="font-semibold break-words">{corretora.nome}</h3>
         {!corretora.ativa && (
-          <span className="rounded bg-slate-200 px-2 py-0.5 text-xs">
+          <span className="rounded bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-xs">
             Inativa
           </span>
         )}
         {corretora.suporta_lightning && (
-          <span className="rounded bg-yellow-100 px-2 py-0.5 text-xs text-yellow-800">
+          <span className="rounded bg-yellow-100 dark:bg-yellow-900/40 px-2 py-0.5 text-xs text-yellow-800 dark:text-yellow-300">
             ⚡ Lightning
           </span>
         )}
@@ -59,32 +59,34 @@ export function CorretoraItem({
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
         <div>
-          <dt className="text-slate-500">Negociação</dt>
+          <dt className="text-slate-500 dark:text-slate-400">Negociação</dt>
           <dd>{formatarPct(corretora.taxa_negociacao_pct)}</dd>
         </div>
         <div>
-          <dt className="text-slate-500">Spread</dt>
+          <dt className="text-slate-500 dark:text-slate-400">Spread</dt>
           <dd>{formatarPct(corretora.spread_pct)}</dd>
         </div>
         <div>
-          <dt className="text-slate-500">Saque on-chain</dt>
+          <dt className="text-slate-500 dark:text-slate-400">Saque on-chain</dt>
           <dd>{formatarSats(corretora.taxa_saque_onchain_sats)}</dd>
         </div>
         {corretora.suporta_lightning && (
           <div>
-            <dt className="text-slate-500">Saque Lightning</dt>
+            <dt className="text-slate-500 dark:text-slate-400">
+              Saque Lightning
+            </dt>
             <dd>{formatarSats(corretora.taxa_saque_lightning_sats)}</dd>
           </div>
         )}
         {corretora.saque_minimo_sats > 0 && (
           <div>
-            <dt className="text-slate-500">Saque mínimo</dt>
+            <dt className="text-slate-500 dark:text-slate-400">Saque mínimo</dt>
             <dd>{formatarSats(corretora.saque_minimo_sats)}</dd>
           </div>
         )}
       </dl>
       {corretora.observacoes && (
-        <p className="text-sm text-slate-600 break-words">
+        <p className="text-sm text-slate-600 dark:text-slate-400 break-words">
           {corretora.observacoes}
         </p>
       )}
@@ -94,7 +96,7 @@ export function CorretoraItem({
           type="button"
           onClick={() => setEditando(true)}
           disabled={ocupado}
-          className="rounded border border-slate-300 px-3 py-1 text-sm hover:bg-slate-100 disabled:opacity-60"
+          className="rounded border border-slate-300 dark:border-slate-600 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
         >
           Editar
         </button>
@@ -102,7 +104,7 @@ export function CorretoraItem({
           type="button"
           onClick={() => executar(() => onAlternarAtiva(corretora))}
           disabled={ocupado}
-          className="rounded border border-slate-300 px-3 py-1 text-sm hover:bg-slate-100 disabled:opacity-60"
+          className="rounded border border-slate-300 dark:border-slate-600 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
         >
           {corretora.ativa ? "Desativar" : "Ativar"}
         </button>
@@ -110,7 +112,7 @@ export function CorretoraItem({
           type="button"
           onClick={() => executar(() => onRemover(corretora))}
           disabled={ocupado}
-          className="rounded border border-red-300 px-3 py-1 text-sm text-red-700 hover:bg-red-50 disabled:opacity-60"
+          className="rounded border border-red-300 dark:border-red-800 px-3 py-1 text-sm text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-60"
         >
           Remover
         </button>

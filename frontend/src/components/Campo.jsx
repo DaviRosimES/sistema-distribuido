@@ -12,16 +12,23 @@ export function Campo({ id, rotulo, erro, ajuda, className = "", ...props }) {
         id={id}
         aria-invalid={erro ? "true" : "false"}
         aria-describedby={descricoes || undefined}
-        className="w-full rounded border border-slate-300 p-2 aria-[invalid=true]:border-red-600"
+        className="w-full rounded border border-slate-300 dark:border-slate-600 p-2 aria-[invalid=true]:border-red-600"
         {...props}
       />
       {ajuda && (
-        <p id={`${id}-ajuda`} className="text-xs text-slate-500">
+        <p
+          id={`${id}-ajuda`}
+          className="text-xs text-slate-500 dark:text-slate-400"
+        >
           {ajuda}
         </p>
       )}
       {erro && (
-        <p id={`${id}-erro`} role="alert" className="text-sm text-red-700">
+        <p
+          id={`${id}-erro`}
+          role="alert"
+          className="text-sm text-red-700 dark:text-red-300"
+        >
           {erro}
         </p>
       )}

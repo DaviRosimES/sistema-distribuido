@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Aviso } from "./components/Aviso";
+import { BotaoTema } from "./components/BotaoTema";
 import { CorretoraForm } from "./components/CorretoraForm";
 import { CorretoraList } from "./components/CorretoraList";
 import { SimulacaoForm } from "./components/SimulacaoForm";
@@ -143,7 +144,11 @@ export default function App() {
 
   function conteudo() {
     if (carregando) {
-      return <p className="text-slate-600">Carregando dados...</p>;
+      return (
+        <p className="text-slate-600 dark:text-slate-400">
+          Carregando dados...
+        </p>
+      );
     }
     if (erroCarga) {
       return <Aviso>{erroCarga}</Aviso>;
@@ -181,7 +186,7 @@ export default function App() {
           <h2 id="nova-simulacao" className="text-xl font-semibold">
             Quanto custa comprar e sacar pra sua carteira?
           </h2>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             {ativas === 0
               ? "Nenhuma corretora ativa: cadastre ou ative uma na aba Corretoras."
               : `A comparação considera as ${ativas} corretoras ativas.`}
@@ -193,7 +198,9 @@ export default function App() {
             Histórico de simulações
           </h2>
           {simulacoes.length === 0 ? (
-            <p className="text-slate-600">Nenhuma simulação salva.</p>
+            <p className="text-slate-600 dark:text-slate-400">
+              Nenhuma simulação salva.
+            </p>
           ) : (
             <ul aria-label="Simulações salvas" className="space-y-3">
               {simulacoes.map((simulacao) => (
@@ -214,18 +221,21 @@ export default function App() {
 
   return (
     <main className="mx-auto min-h-screen max-w-4xl space-y-6 p-4 sm:p-6">
-      <header className="space-y-1">
-        <h1 className="text-3xl font-bold">Comparador de Autocustódia</h1>
-        <p className="text-slate-600">
-          Descubra em qual corretora sai mais barato comprar bitcoin e sacar pra
-          sua própria carteira.
-        </p>
+      <header className="flex flex-col-reverse gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold">Comparador de Autocustódia</h1>
+          <p className="text-slate-600 dark:text-slate-400">
+            Descubra em qual corretora sai mais barato comprar bitcoin e sacar
+            pra sua própria carteira.
+          </p>
+        </div>
+        <BotaoTema />
       </header>
 
       <div
         role="tablist"
         aria-label="Seções"
-        className="flex gap-2 border-b border-slate-200"
+        className="flex gap-2 border-b border-slate-200 dark:border-slate-700"
       >
         {ABAS.map(({ id, rotulo }) => (
           <button
@@ -234,7 +244,7 @@ export default function App() {
             role="tab"
             aria-selected={aba === id}
             onClick={() => trocarAba(id)}
-            className="-mb-px border-b-2 border-transparent px-4 py-2 font-medium text-slate-600 hover:text-slate-900 aria-selected:border-orange-600 aria-selected:text-orange-700"
+            className="-mb-px border-b-2 border-transparent px-4 py-2 font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 aria-selected:border-orange-600 aria-selected:text-orange-700 dark:aria-selected:text-orange-400"
           >
             {rotulo}
           </button>

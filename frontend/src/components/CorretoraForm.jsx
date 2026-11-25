@@ -92,7 +92,7 @@ export function CorretoraForm({
       onSubmit={handleSubmit}
       noValidate
       aria-label={corretora ? `Editar ${corretora.nome}` : "Nova corretora"}
-      className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+      className="space-y-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm"
     >
       <Campo rotulo="Nome" autoComplete="off" {...campo("nome")} />
 
@@ -164,10 +164,10 @@ export function CorretoraForm({
           onChange={alterar("observacoes")}
           rows={2}
           aria-invalid={erros.observacoes ? "true" : "false"}
-          className="w-full rounded border border-slate-300 p-2 aria-[invalid=true]:border-red-600"
+          className="w-full rounded border border-slate-300 dark:border-slate-600 p-2 aria-[invalid=true]:border-red-600"
         />
         {erros.observacoes && (
-          <p role="alert" className="text-sm text-red-700">
+          <p role="alert" className="text-sm text-red-700 dark:text-red-300">
             {erros.observacoes}
           </p>
         )}
@@ -188,7 +188,7 @@ export function CorretoraForm({
             type="button"
             onClick={onCancelar}
             disabled={salvando}
-            className="rounded border border-slate-300 px-4 py-2 font-medium hover:bg-slate-100"
+            className="rounded border border-slate-300 dark:border-slate-600 px-4 py-2 font-medium hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             Cancelar
           </button>
