@@ -22,6 +22,9 @@ services:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-sistema_distribuido}
       # Só o endereço do frontend pode chamar a API pelo navegador
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:${FRONTEND_PORT:-5173},http://127.0.0.1:${FRONTEND_PORT:-5173}}
+      # A API busca a cotação do BTC na internet (Binance, com reserva no CoinGecko)
+      COTACAO_TIMEOUT_SEGUNDOS: ${COTACAO_TIMEOUT_SEGUNDOS:-5}
+      COTACAO_CACHE_SEGUNDOS: ${COTACAO_CACHE_SEGUNDOS:-60}
     depends_on:
       db:
         condition: service_healthy

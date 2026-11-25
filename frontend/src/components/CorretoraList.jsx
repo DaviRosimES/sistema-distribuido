@@ -5,7 +5,7 @@ export function CorretoraList({ corretoras, ...acoes }) {
     return (
       <p className="text-slate-600">
         Nenhuma corretora cadastrada. Cadastre a primeira acima ou rode o{" "}
-        <code>make docker-seed</code> pra carregar exemplos.
+        <code>make docker-seed</code> pra carregar Binance, Bitso e Foxbit.
       </p>
     );
   }

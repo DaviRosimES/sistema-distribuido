@@ -23,7 +23,8 @@ frontend/
 │   ├── services/
 │   │   ├── api.js              # request(): fetch + tratamento de erros
 │   │   ├── corretoras.js       # chamadas de /corretoras
-│   │   └── simulacoes.js       # chamadas de /simulacoes
+│   │   ├── simulacoes.js       # chamadas de /simulacoes
+│   │   └── cotacao.js          # GET /cotacao (botão "Usar cotação atual")
 │   ├── App.jsx                 # abas, carregamento inicial e estado da tela
 │   ├── validation.js           # regras de validação (mesmas do backend)
 │   ├── format.js               # R$, sats, % e datas em pt-BR
@@ -65,8 +66,9 @@ A URL da API vem da variável `VITE_API_URL` (padrão `http://localhost:8000`). 
 
 As chamadas ficam em `src/services/`: uma função por operação de cada recurso
 (`listarCorretoras`, `criarCorretora`, `substituirCorretora`, `atualizarCorretora`,
-`removerCorretora`, `listarSimulacoes`, `criarSimulacao`, `atualizarSimulacao` e
-`removerSimulacao`). Todas passam pela `request` de `api.js`, que trata três casos:
+`removerCorretora`, `listarSimulacoes`, `criarSimulacao`, `atualizarSimulacao`,
+`removerSimulacao` e `obterCotacao`). Todas passam pela `request` de `api.js`, que trata
+três casos:
 
 | Situação         | O que acontece                                                     |
 | ---------------- | ------------------------------------------------------------------ |

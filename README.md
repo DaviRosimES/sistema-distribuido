@@ -39,6 +39,12 @@ histórico.
   - corretoras inativas ficam fora das simulações;
   - o ranking salvo é uma "foto": mudar as taxas de uma corretora (ou apagá-la) não altera
     simulações antigas, só um recálculo explícito.
+- **Cotação ao vivo:** o botão "Usar cotação atual" preenche o preço do BTC. A API busca o
+  preço na Binance (par BTC/BRL) e, se ela falhar, no CoinGecko; guarda a cotação por 60
+  segundos pra não repetir a chamada externa a cada clique e responde 503 se nenhuma fonte
+  responder, caso em que o preço é digitado à mão. As duas fontes são públicas, sem chave.
+- **Corretoras reais:** o seed cadastra Binance, Bitso e Foxbit com taxas pesquisadas em
+  25/11/2026 (ver [Dados das corretoras](#dados-das-corretoras)).
 - **Interface:** estados de carregamento, sucesso e erro, validação dos formulários com as
   mesmas regras do backend, aceita números no formato brasileiro (`1.000,50`) e funciona no
   celular.
@@ -74,7 +80,13 @@ R$ 300. Esse é o caso testado em `backend/tests/unit/test_calculadora.py`.
 
 ```
 Navegador (React, :5173) --fetch/JSON--> API FastAPI (:8000) --SQLAlchemy--> PostgreSQL (:5432)
+                                                  |
+                                                  +--HTTPS--> Binance / CoinGecko (cotação do BTC)
 ```
+
+O navegador nunca chama as fontes de cotação direto: ele chama a nossa API, que chama a
+fonte externa. Assim não há dependência de CORS de terceiros e dá pra trocar de fonte sem
+mexer no frontend.
 
 O backend mantém as camadas trabalhadas nas aulas:
 
@@ -82,16 +94,18 @@ O backend mantém as camadas trabalhadas nas aulas:
 backend/
 ├── app/
 │   ├── main.py                 # cria a aplicação, configura o CORS e registra os routers
-│   ├── seed.py                 # corretoras de exemplo (make seed / make docker-seed)
+│   ├── seed.py                 # corretoras reais com as taxas pesquisadas (make seed)
+│   ├── clients/cotacao.py      # fontes externas da cotação (Binance e CoinGecko)
 │   ├── api/
 │   │   ├── dependencies.py     # injeção de dependência (sessão, repositórios e services)
-│   │   └── routes/             # endpoints HTTP: health, corretoras e simulacoes
+│   │   └── routes/             # endpoints HTTP: health, corretoras, simulacoes e cotacao
 │   ├── core/config.py          # DATABASE_URL e CORS_ORIGINS
 │   ├── database/               # engine, sessão e base declarativa
 │   ├── models/                 # tabelas: corretoras e simulacoes
 │   ├── schemas/                # o que entra e sai da API (validação com Pydantic)
 │   ├── services/
 │   │   ├── calculadora.py      # regras de cálculo (funções puras, sem banco)
+│   │   ├── cotacao_service.py  # fallback entre as fontes e cache da cotação
 │   │   ├── corretora_service.py
 │   │   └── simulacao_service.py
 │   └── repositories/           # acesso ao banco com SQLAlchemy
@@ -106,7 +120,7 @@ frontend/
 ├── src/
 │   ├── App.jsx                 # abas Simular e Corretoras, carrega os dados da API
 │   ├── components/             # formulários, lista de corretoras, ranking e histórico
-│   ├── services/               # chamadas HTTP (api.js, corretoras.js, simulacoes.js)
+│   ├── services/               # chamadas HTTP (api, corretoras, simulacoes, cotacao)
 │   ├── validation.js           # mesmas regras dos schemas do backend
 │   └── format.js               # formatação pt-BR (R$, sats, %)
 └── tests/
@@ -133,6 +147,7 @@ Mais detalhes do frontend em [`frontend/README.md`](frontend/README.md).
 | POST   | `/simulacoes`       | Calcula o ranking e salva (422 sem corretora ativa)          |
 | PATCH  | `/simulacoes/{id}`  | Muda a descrição; mudando parâmetro, recalcula o ranking     |
 | DELETE | `/simulacoes/{id}`  | Remove                                                       |
+| GET    | `/cotacao`          | Preço atual do BTC em reais, a fonte e o horário (503 se nenhuma fonte responder) |
 
 Com a API no ar, a documentação interativa (Swagger) fica em `http://localhost:8000/docs`.
 
@@ -156,15 +171,18 @@ Copie o `.env.example` para `.env` se quiser mudar algum valor; os padrões já 
 | `CORS_ORIGINS`      | `http://localhost:5173,http://127.0.0.1:5173` | Origens que podem chamar a API        |
 | `VITE_API_URL`      | `http://localhost:8000`                   | Endereço da API usado pelo navegador      |
 | `DATABASE_URL`      | montada pelo compose                      | Conexão do backend com o banco            |
+| `COTACAO_TIMEOUT_SEGUNDOS` | `5`                                | Espera máxima por cada fonte de cotação   |
+| `COTACAO_CACHE_SEGUNDOS`   | `60`                               | Por quanto tempo a cotação é reaproveitada |
 
-O `.env` está no `.gitignore`; nenhum segredo real é versionado.
+O `.env` está no `.gitignore`; nenhum segredo real é versionado. A cotação usa APIs públicas,
+então o projeto não precisa de nenhuma chave de API pra funcionar.
 
 ## Rodando com Docker Compose
 
 ```bash
 cp .env.example .env    # opcional
 make docker-up          # sobe db, migrations, API e frontend
-make docker-seed        # opcional: cadastra 4 corretoras de exemplo
+make docker-seed        # opcional: cadastra Binance, Bitso e Foxbit
 ```
 
 Acesse:
@@ -183,8 +201,21 @@ O compose sobe os serviços nesta ordem, cada um esperando o anterior ficar saud
 `make docker-logs` acompanha os logs e `make docker-down` derruba tudo (os dados continuam
 no volume).
 
-> As corretoras do seed são **fictícias**, com taxas inventadas só pra mostrar perfis
-> diferentes. Pra uma comparação real, cadastre as taxas que cada corretora divulga hoje.
+### Dados das corretoras
+
+O `make docker-seed` cadastra três corretoras reais. As corretoras não publicam taxa de saque
+nem spread numa API aberta, então os valores foram pesquisados à mão em **25/11/2026**, e as
+observações de cada uma dizem o que é oficial e o que é estimativa:
+
+| Corretora | Negociação (taker) | Saque on-chain | Saque Lightning | Origem |
+| --------- | ------------------ | -------------- | --------------- | ------ |
+| Binance   | 0,10% (oficial)    | 3.000 sats (estimado) | 100 sats (estimado) | [tabela de taxas](https://www.binance.com/en/fee/schedule); saques por fontes de terceiros |
+| Bitso     | 0,40% (oficial)    | 1.543 sats (oficial)  | grátis (oficial)    | [negociação](https://bitso.com/br/fees) e [saques](https://bitso.com/br/fees/transactions) |
+| Foxbit    | 0,50% (oficial)    | 40.000 sats (estimado) | não confirmado     | [tabela de taxas](https://foxbit.com.br/taxas/); saque por fontes antigas de terceiros |
+
+O spread de todas é estimado (0,1% a 0,2%), porque nenhuma publica esse valor. O Mercado
+Bitcoin ficou de fora porque não encontrei fonte para a taxa de saque de BTC; dá pra
+cadastrá-lo pela tela. Taxas mudam: confira no app da corretora e edite pela aba Corretoras.
 
 Para conferir os dados direto no banco:
 
@@ -214,7 +245,7 @@ de `CORS_ORIGINS` (nunca `*`) e só os métodos usados: `GET`, `POST`, `PUT`, `P
 make install
 docker compose up -d db   # só o banco
 make db-upgrade           # aplica as migrations
-make seed                 # opcional: corretoras de exemplo
+make seed                 # opcional: Binance, Bitso e Foxbit
 make run                  # API em http://localhost:8000
 make frontend-install
 make frontend-dev         # frontend em http://localhost:5173
