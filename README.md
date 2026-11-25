@@ -52,6 +52,9 @@ histórico.
   isso o custo em % é o mesmo nas duas. Em dólar a Binance usa o par BTC/USDT, uma
   stablecoin que acompanha o dólar 1:1; Bitso e Foxbit negociam em reais, então a simulação
   em dólar serve pra quem compra com dólar ou USDT.
+- **Composição do custo:** no ranking, cada corretora tem uma barra dividida em negociação,
+  spread e saque, com comprimento proporcional ao custo. Ela mostra de cara quando a taxa
+  fixa de saque é o que pesa (como em compras pequenas on-chain).
 - **Modo escuro:** segue o tema do sistema operacional e tem um botão no cabeçalho; a escolha
   fica salva no navegador.
 - **Interface:** estados de carregamento, sucesso e erro, validação dos formulários com as
@@ -82,7 +85,7 @@ cenário (US$ 200 com o BTC a US$ 100.000) custa US$ 23, os mesmos 11,5%.
 | ---------- | ------------------------------------------------------------------------ |
 | Backend    | Python 3.11, FastAPI, Pydantic, SQLAlchemy 2, Alembic, Poetry, Ruff      |
 | Banco      | PostgreSQL 16                                                            |
-| Frontend   | React 19, Vite, Tailwind CSS, Biome                                      |
+| Frontend   | React 19, Vite, Tailwind CSS, lucide-react (ícones), Biome               |
 | Testes     | Pytest, Vitest + Testing Library, Playwright (E2E)                       |
 | Infra      | Docker, Docker Compose, Makefile, GitHub Actions                         |
 

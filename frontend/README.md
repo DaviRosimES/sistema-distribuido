@@ -1,6 +1,7 @@
 # Frontend
 
-Interface do Comparador de Autocustódia em React + Vite, estilizada com Tailwind CSS. As
+Interface do Comparador de Autocustódia em React + Vite, estilizada com Tailwind CSS,
+com as fontes Inter e JetBrains Mono (empacotadas via npm) e ícones do `lucide-react`. As
 corretoras e as simulações vêm da API FastAPI do `backend/` e ficam salvas no PostgreSQL,
 então continuam lá depois de recarregar a página.
 
@@ -30,6 +31,7 @@ frontend/
 │   ├── validation.js           # regras de validação (mesmas do backend)
 │   ├── format.js               # R$/US$, sats, % e datas em pt-BR
 │   ├── tema.js                 # modo escuro: tema salvo ou o do sistema
+│   ├── ui.js                   # classes compartilhadas (botões, campos, painéis, números)
 │   ├── index.css               # importa o Tailwind
 │   └── main.jsx
 ├── tests/
