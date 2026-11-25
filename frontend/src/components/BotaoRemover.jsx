@@ -23,11 +23,10 @@ export function BotaoRemover({ onConfirmar, disabled, className = "" }) {
   }
 
   return (
-    <span
-      role="group"
-      aria-label="Confirmar remoção"
-      className={`inline-flex flex-wrap items-center gap-2 ${className}`}
+    <fieldset
+      className={`m-0 inline-flex min-w-0 flex-wrap items-center gap-2 border-0 p-0 ${className}`}
     >
+      <legend className="sr-only">Confirmar remoção</legend>
       <span className="text-sm text-zinc-600 dark:text-zinc-400">
         Remover de vez?
       </span>
@@ -51,6 +50,6 @@ export function BotaoRemover({ onConfirmar, disabled, className = "" }) {
       >
         Cancelar
       </button>
-    </span>
+    </fieldset>
   );
 }
