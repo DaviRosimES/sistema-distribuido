@@ -5,8 +5,10 @@ from sqlalchemy.orm import Session
 
 from app.database.session import get_db
 from app.repositories.corretora_repository import CorretoraRepository
+from app.repositories.simulacao_repository import SimulacaoRepository
 from app.repositories.tarefa_repository import TarefaRepository
 from app.services.corretora_service import CorretoraService
+from app.services.simulacao_service import SimulacaoService
 from app.services.tarefa_service import TarefaService
 
 
@@ -30,3 +32,10 @@ def get_corretora_service(
     repository: Annotated[CorretoraRepository, Depends(get_corretora_repository)],
 ) -> CorretoraService:
     return CorretoraService(repository)
+
+
+def get_simulacao_service(
+    db: Annotated[Session, Depends(get_db)],
+    corretoras: Annotated[CorretoraRepository, Depends(get_corretora_repository)],
+) -> SimulacaoService:
+    return SimulacaoService(SimulacaoRepository(db), corretoras)
