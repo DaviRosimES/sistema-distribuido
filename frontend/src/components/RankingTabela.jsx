@@ -1,0 +1,92 @@
+import { formatarPct, formatarReais, formatarSats } from "../format";
+
+// Tabela com o resultado de uma simulação. O ranking já vem ordenado da API:
+// viáveis da mais barata pra mais cara, inviáveis no fim com o motivo.
+export function RankingTabela({ simulacao }) {
+  const { ranking, compras_por_saque, custo_alvo_pct } = simulacao;
+  const juntaSaques = compras_por_saque > 1;
+
+  return (
+    // overflow-x-auto: no celular só a tabela rola de lado, a página não
+    <div className="overflow-x-auto rounded-lg border border-slate-200">
+      <table className="w-full min-w-[640px] text-left text-sm">
+        <caption className="sr-only">Ranking de custo por corretora</caption>
+        <thead className="bg-slate-100 text-slate-600">
+          <tr>
+            <th scope="col" className="p-2">
+              #
+            </th>
+            <th scope="col" className="p-2">
+              Corretora
+            </th>
+            <th scope="col" className="p-2 text-right">
+              Chega na carteira
+            </th>
+            <th scope="col" className="p-2 text-right">
+              Custo total
+            </th>
+            <th scope="col" className="p-2">
+              Composição
+            </th>
+            <th scope="col" className="p-2 text-right">
+              Mínimo p/ {formatarPct(custo_alvo_pct)}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {ranking.map((item, posicao) => (
+            <tr
+              key={item.corretora_id}
+              className={`border-t border-slate-200 ${posicao === 0 && item.viavel ? "bg-green-50" : ""} ${item.viavel ? "" : "text-slate-500"}`}
+            >
+              <td className="p-2">{item.viavel ? `${posicao + 1}º` : "—"}</td>
+              <th scope="row" className="p-2 font-medium">
+                {item.corretora_nome}
+                {posicao === 0 && item.viavel && (
+                  <span className="ml-2 rounded bg-green-600 px-1.5 py-0.5 text-xs text-white">
+                    Mais barata
+                  </span>
+                )}
+              </th>
+              {item.viavel ? (
+                <>
+                  <td className="p-2 text-right">
+                    {formatarSats(item.sats_recebidos)}
+                  </td>
+                  <td className="p-2 text-right">
+                    <span className="font-semibold">
+                      {formatarReais(item.custo_total_brl)}
+                    </span>
+                    <span className="block text-xs">
+                      {formatarPct(item.custo_pct)}
+                    </span>
+                  </td>
+                  <td className="p-2 text-xs">
+                    Negociação {formatarReais(item.taxa_negociacao_brl)} ·
+                    Spread {formatarReais(item.spread_brl)} · Saque{" "}
+                    {formatarReais(item.taxa_saque_brl)}
+                    {juntaSaques && item.economia_brl > 0 && (
+                      <span className="block text-green-700">
+                        Economia de {formatarReais(item.economia_brl)} juntando{" "}
+                        {compras_por_saque} compras por saque
+                      </span>
+                    )}
+                  </td>
+                </>
+              ) : (
+                <td colSpan={3} className="p-2 italic">
+                  {item.motivo}
+                </td>
+              )}
+              <td className="p-2 text-right">
+                {item.valor_minimo_brl === null
+                  ? "Impossível"
+                  : formatarReais(item.valor_minimo_brl)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
