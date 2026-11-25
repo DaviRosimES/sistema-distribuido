@@ -1,4 +1,6 @@
 import { useId, useState } from "react";
+import { formatarDecimal, formatarHora } from "../format";
+import { obterCotacao } from "../services/cotacao";
 import { validarSimulacao } from "../validation";
 import { Aviso } from "./Aviso";
 import { Campo } from "./Campo";
@@ -18,10 +20,36 @@ export function SimulacaoForm({ onSimular }) {
   const [erros, setErros] = useState({});
   const [erroApi, setErroApi] = useState("");
   const [simulando, setSimulando] = useState(false);
+  const [buscandoCotacao, setBuscandoCotacao] = useState(false);
+  const [cotacaoInfo, setCotacaoInfo] = useState("");
+  const [erroCotacao, setErroCotacao] = useState("");
 
   function alterar(campo) {
     return (event) =>
       setForm((atual) => ({ ...atual, [campo]: event.target.value }));
+  }
+
+  // Preenche o preço com a cotação que a API buscou. Se falhar, o campo continua
+  // editável e a pessoa digita o preço à mão.
+  async function usarCotacaoAtual() {
+    setBuscandoCotacao(true);
+    setCotacaoInfo("");
+    setErroCotacao("");
+    try {
+      const cotacao = await obterCotacao();
+      setForm((atual) => ({
+        ...atual,
+        preco_btc_brl: formatarDecimal(cotacao.preco_btc_brl),
+      }));
+      setErros((atuais) => ({ ...atuais, preco_btc_brl: undefined }));
+      setCotacaoInfo(
+        `Cotação da ${cotacao.fonte} às ${formatarHora(cotacao.consultada_em)}.`,
+      );
+    } catch (erro) {
+      setErroCotacao(erro.message);
+    } finally {
+      setBuscandoCotacao(false);
+    }
   }
 
   async function handleSubmit(event) {
@@ -64,13 +92,25 @@ export function SimulacaoForm({ onSimular }) {
           placeholder="1.000,00"
           {...campo("valor_brl")}
         />
-        <Campo
-          rotulo="Preço do BTC (R$)"
-          inputMode="decimal"
-          placeholder="500.000,00"
-          ajuda="Cotação atual, usada pra converter as taxas em sats"
-          {...campo("preco_btc_brl")}
-        />
+        <div className="space-y-2">
+          <Campo
+            rotulo="Preço do BTC (R$)"
+            inputMode="decimal"
+            placeholder="500.000,00"
+            ajuda="Usado pra converter as taxas em sats"
+            {...campo("preco_btc_brl")}
+          />
+          <button
+            type="button"
+            onClick={usarCotacaoAtual}
+            disabled={buscandoCotacao}
+            className="rounded border border-slate-300 px-3 py-1 text-sm hover:bg-slate-100 disabled:opacity-60"
+          >
+            {buscandoCotacao ? "Buscando cotação..." : "Usar cotação atual"}
+          </button>
+          <Aviso tipo="sucesso">{cotacaoInfo}</Aviso>
+          <Aviso>{erroCotacao}</Aviso>
+        </div>
         <div className="space-y-1">
           <label htmlFor={`${id}-rede`} className="block text-sm font-medium">
             Rede do saque

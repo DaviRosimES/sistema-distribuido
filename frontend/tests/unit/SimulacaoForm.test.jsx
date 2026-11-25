@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { SimulacaoForm } from "../../src/components/SimulacaoForm";
+import { API_URL } from "../../src/services/api";
+import { resposta } from "../helpers/api";
 
 describe("SimulacaoForm", () => {
   it("envia os parâmetros convertidos", async () => {
@@ -66,5 +68,60 @@ describe("SimulacaoForm", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Cadastre pelo menos uma corretora ativa",
     );
+  });
+});
+
+describe("SimulacaoForm buscando a cotação", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("preenche o preço com a cotação da API e mostra a fonte", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      resposta(200, {
+        preco_btc_brl: 343635.12,
+        fonte: "Binance",
+        consultada_em: "2026-11-25T13:38:00Z",
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+    render(<SimulacaoForm onSimular={vi.fn()} />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Usar cotação atual" }),
+    );
+
+    expect(screen.getByLabelText("Preço do BTC (R$)")).toHaveValue(
+      "343.635,12",
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Cotação da Binance às",
+    );
+    expect(fetchMock).toHaveBeenCalledWith(`${API_URL}/cotacao`, undefined);
+  });
+
+  it("mostra o 503 da API e deixa o campo pra preencher à mão", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        resposta(503, {
+          detail:
+            "Não foi possível obter a cotação agora. Informe o preço do BTC manualmente.",
+        }),
+      ),
+    );
+    const user = userEvent.setup();
+    render(<SimulacaoForm onSimular={vi.fn()} />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Usar cotação atual" }),
+    );
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Informe o preço do BTC manualmente",
+    );
+    expect(screen.getByLabelText("Preço do BTC (R$)")).toHaveValue("");
+    expect(screen.getByLabelText("Preço do BTC (R$)")).toBeEnabled();
   });
 });

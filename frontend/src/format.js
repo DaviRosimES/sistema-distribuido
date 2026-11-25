@@ -25,3 +25,20 @@ export function formatarData(iso) {
     timeStyle: "short",
   });
 }
+
+// Número com 2 casas no formato que o campo aceita de volta ("343.635,12")
+const decimal2 = new Intl.NumberFormat("pt-BR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+export function formatarDecimal(valor) {
+  return decimal2.format(valor);
+}
+
+export function formatarHora(iso) {
+  return new Date(iso).toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
