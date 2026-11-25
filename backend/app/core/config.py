@@ -15,3 +15,8 @@ CORS_ORIGINS = [
     for origem in os.getenv("CORS_ORIGINS", _CORS_ORIGINS_PADRAO).split(",")
     if origem.strip()
 ]
+
+# Cotação do BTC: quanto tempo esperar cada fonte externa e por quanto tempo reaproveitar
+# a última cotação antes de consultar de novo
+COTACAO_TIMEOUT_SEGUNDOS = float(os.getenv("COTACAO_TIMEOUT_SEGUNDOS", "5"))
+COTACAO_CACHE_SEGUNDOS = int(os.getenv("COTACAO_CACHE_SEGUNDOS", "60"))

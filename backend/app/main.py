@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import corretoras, health, simulacoes
+from app.api.routes import corretoras, cotacao, health, simulacoes
 from app.core.config import CORS_ORIGINS
 
 # O main.py só cria a aplicação e registra os routers, a lógica fica nas outras camadas
@@ -20,3 +20,4 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(corretoras.router)
 app.include_router(simulacoes.router)
+app.include_router(cotacao.router)

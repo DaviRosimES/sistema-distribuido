@@ -11,7 +11,8 @@ dependencies = [
     "uvicorn[standard] (>=0.52.4,<0.53.0)",
     "sqlalchemy (>=2.1.4,<3.0.0)",
     "psycopg[binary] (>=3.3.6,<4.0.0)",
-    "alembic (>=1.20.0,<2.0.0)"
+    "alembic (>=1.20.0,<2.0.0)",
+    "httpx (>=0.28.1,<0.29.0)"
 ]
 
 [tool.poetry]
@@ -24,7 +25,6 @@ build-backend = "poetry.core.masonry.api"
 [dependency-groups]
 dev = [
     "pytest (>=9.1.1,<10.0.0)",
-    "httpx (>=0.28.1,<0.29.0)",
     "ruff (>=0.17.1,<0.18.0)"
 ]
 

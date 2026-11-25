@@ -1,5 +1,7 @@
 from datetime import UTC, datetime
+from decimal import Decimal
 
+from app.clients.cotacao import FonteIndisponivelError
 from app.models.corretora import CorretoraModel
 from app.models.simulacao import SimulacaoModel
 
@@ -57,3 +59,18 @@ class FakeSimulacaoRepository:
 
     def remover(self, simulacao: SimulacaoModel) -> None:
         del self.simulacoes[simulacao.id]
+
+
+# Fonte de cotação que não acessa a internet: devolve o preço configurado ou, sem preço,
+# finge que está fora do ar
+class FonteFalsa:
+    def __init__(self, nome, preco=None):
+        self.nome = nome
+        self.preco = preco
+        self.chamadas = 0
+
+    def buscar(self):
+        self.chamadas += 1
+        if self.preco is None:
+            raise FonteIndisponivelError("fora do ar")
+        return Decimal(self.preco)
