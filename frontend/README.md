@@ -14,6 +14,7 @@ frontend/
 │   ├── components/
 │   │   ├── Campo.jsx           # rótulo + input + ajuda/erro (acessível)
 │   │   ├── Aviso.jsx           # mensagens de erro (alert) e sucesso (status)
+│   │   ├── BotaoTema.jsx       # alterna entre modo claro e escuro
 │   │   ├── CorretoraForm.jsx   # cadastro e edição de corretora, com validação
 │   │   ├── CorretoraItem.jsx   # uma corretora: editar, ativar/desativar e remover
 │   │   ├── CorretoraList.jsx   # listagem e estado vazio
@@ -27,7 +28,8 @@ frontend/
 │   │   └── cotacao.js          # GET /cotacao (botão "Usar cotação atual")
 │   ├── App.jsx                 # abas, carregamento inicial e estado da tela
 │   ├── validation.js           # regras de validação (mesmas do backend)
-│   ├── format.js               # R$, sats, % e datas em pt-BR
+│   ├── format.js               # R$/US$, sats, % e datas em pt-BR
+│   ├── tema.js                 # modo escuro: tema salvo ou o do sistema
 │   ├── index.css               # importa o Tailwind
 │   └── main.jsx
 ├── tests/

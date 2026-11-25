@@ -21,12 +21,13 @@ histórico.
 - **Corretoras (CRUD completo):** cadastrar, listar, editar (PUT), ativar/desativar (PATCH) e
   remover. Cada corretora tem taxa de negociação (%), spread (%), taxa de saque on-chain e
   Lightning (sats), saque mínimo e observações.
-- **Simulações (CRUD):** informar valor por compra, preço do BTC, rede do saque (on-chain ou
-  Lightning), quantas compras são juntadas por saque e o custo máximo aceitável. A API calcula
+- **Simulações (CRUD):** informar a moeda (real ou dólar), valor por compra, preço do BTC,
+  rede do saque (on-chain ou Lightning), quantas compras são juntadas por saque e o custo máximo aceitável. A API calcula
   o ranking e salva a simulação; dá pra editar a descrição, recalcular com as taxas atuais e
   remover.
 - **Regras de negócio** (no backend, em `app/services/`):
-  - custo total = taxa de negociação + spread + taxa de saque convertida em reais;
+  - custo total = taxa de negociação + spread + taxa de saque convertida na moeda da
+    simulação;
   - a corretora credita sats inteiros (arredonda pra baixo);
   - corretora **inviável** quando a compra não atinge o saque mínimo, quando a taxa de saque
     é maior que o valor comprado ou quando ela não saca pela Lightning; inviáveis vão pro fim
@@ -39,12 +40,20 @@ histórico.
   - corretoras inativas ficam fora das simulações;
   - o ranking salvo é uma "foto": mudar as taxas de uma corretora (ou apagá-la) não altera
     simulações antigas, só um recálculo explícito.
-- **Cotação ao vivo:** o botão "Usar cotação atual" preenche o preço do BTC. A API busca o
-  preço na Binance (par BTC/BRL) e, se ela falhar, no CoinGecko; guarda a cotação por 60
+- **Cotação ao vivo:** o botão "Usar cotação atual" preenche o preço do BTC na moeda
+  escolhida. A API busca o preço na Binance (pares BTC/BRL e BTC/USDT) e, se ela falhar, no
+  CoinGecko; guarda a cotação por 60
   segundos pra não repetir a chamada externa a cada clique e responde 503 se nenhuma fonte
   responder, caso em que o preço é digitado à mão. As duas fontes são públicas, sem chave.
 - **Corretoras reais:** o seed cadastra Binance, Bitso e Foxbit com taxas pesquisadas em
   25/11/2026 (ver [Dados das corretoras](#dados-das-corretoras)).
+- **Real ou dólar:** cada simulação guarda a sua moeda e o histórico mostra os valores em R$
+  ou US$. O cálculo não depende de moeda (valor e preço do BTC só precisam estar na mesma), por
+  isso o custo em % é o mesmo nas duas. Em dólar a Binance usa o par BTC/USDT, uma
+  stablecoin que acompanha o dólar 1:1; Bitso e Foxbit negociam em reais, então a simulação
+  em dólar serve pra quem compra com dólar ou USDT.
+- **Modo escuro:** segue o tema do sistema operacional e tem um botão no cabeçalho; a escolha
+  fica salva no navegador.
 - **Interface:** estados de carregamento, sucesso e erro, validação dos formulários com as
   mesmas regras do backend, aceita números no formato brasileiro (`1.000,50`) e funciona no
   celular.
@@ -64,7 +73,8 @@ de saque on-chain:
 | **Custo total**                          | R$ 115 (11,5%) |
 
 Juntando 4 compras por saque, o custo cai pra R$ 160 nos R$ 4.000 (4%), uma economia de
-R$ 300. Esse é o caso testado em `backend/tests/unit/test_calculadora.py`.
+R$ 300. Esse é o caso testado em `backend/tests/unit/test_calculadora.py`. Em dólar, o mesmo
+cenário (US$ 200 com o BTC a US$ 100.000) custa US$ 23, os mesmos 11,5%.
 
 ## Tecnologias
 
@@ -147,7 +157,7 @@ Mais detalhes do frontend em [`frontend/README.md`](frontend/README.md).
 | POST   | `/simulacoes`       | Calcula o ranking e salva (422 sem corretora ativa)          |
 | PATCH  | `/simulacoes/{id}`  | Muda a descrição; mudando parâmetro, recalcula o ranking     |
 | DELETE | `/simulacoes/{id}`  | Remove                                                       |
-| GET    | `/cotacao`          | Preço atual do BTC em reais, a fonte e o horário (503 se nenhuma fonte responder) |
+| GET    | `/cotacao`          | Preço atual do BTC (query `moeda`: `BRL` ou `USD`), a fonte e o horário (503 se nenhuma fonte responder) |
 
 Com a API no ar, a documentação interativa (Swagger) fica em `http://localhost:8000/docs`.
 
@@ -262,8 +272,10 @@ make db-migration msg="descricao"        # gera uma migration a partir dos model
 ```
 
 O histórico começa nas migrations do laboratório de tarefas das aulas, que foi o ponto de
-partida técnico. Depois vêm `cria tabela de corretoras`, `cria tabela de simulacoes` e
-`remove tabela de tarefas do laboratorio`.
+partida técnico. Depois vêm `cria tabela de corretoras`, `cria tabela de simulacoes`,
+`remove tabela de tarefas do laboratorio`, `renomeia campos de valor para nomes sem moeda`
+(renomeia as colunas `valor_brl` e `preco_btc_brl` e as chaves do ranking já salvo, sem perder
+dados) e `adiciona moeda nas simulacoes` (as simulações antigas ficam em `BRL`).
 
 ## Testes e lint
 
