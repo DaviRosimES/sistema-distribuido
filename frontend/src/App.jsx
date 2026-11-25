@@ -1,3 +1,4 @@
+import { Bitcoin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Aviso } from "./components/Aviso";
 import { BotaoTema } from "./components/BotaoTema";
@@ -18,6 +19,8 @@ import {
   listarSimulacoes,
   removerSimulacao,
 } from "./services/simulacoes";
+
+const tituloSecao = "text-base font-semibold tracking-tight";
 
 const ABAS = [
   { id: "simular", rotulo: "Simular" },
@@ -145,7 +148,7 @@ export default function App() {
   function conteudo() {
     if (carregando) {
       return (
-        <p className="text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
           Carregando dados...
         </p>
       );
@@ -155,15 +158,15 @@ export default function App() {
     }
     if (aba === "corretoras") {
       return (
-        <div className="space-y-6">
+        <div className="space-y-10">
           <section aria-labelledby="nova-corretora" className="space-y-3">
-            <h2 id="nova-corretora" className="text-xl font-semibold">
+            <h2 id="nova-corretora" className={tituloSecao}>
               Nova corretora
             </h2>
             <CorretoraForm onSalvar={cadastrarCorretora} />
           </section>
           <section aria-labelledby="lista-corretoras" className="space-y-3">
-            <h2 id="lista-corretoras" className="text-xl font-semibold">
+            <h2 id="lista-corretoras" className={tituloSecao}>
               Corretoras cadastradas
             </h2>
             <Aviso tipo="sucesso">{sucesso}</Aviso>
@@ -181,12 +184,12 @@ export default function App() {
 
     const ativas = corretoras.filter((c) => c.ativa).length;
     return (
-      <div className="space-y-6">
+      <div className="space-y-10">
         <section aria-labelledby="nova-simulacao" className="space-y-3">
-          <h2 id="nova-simulacao" className="text-xl font-semibold">
+          <h2 id="nova-simulacao" className={tituloSecao}>
             Quanto custa comprar e sacar pra sua carteira?
           </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="-mt-1 text-sm text-zinc-500 dark:text-zinc-400">
             {ativas === 0
               ? "Nenhuma corretora ativa: cadastre ou ative uma na aba Corretoras."
               : `A comparação considera as ${ativas} corretoras ativas.`}
@@ -194,11 +197,11 @@ export default function App() {
           <SimulacaoForm onSimular={simular} />
         </section>
         <section aria-labelledby="historico" className="space-y-3">
-          <h2 id="historico" className="text-xl font-semibold">
+          <h2 id="historico" className={tituloSecao}>
             Histórico de simulações
           </h2>
           {simulacoes.length === 0 ? (
-            <p className="text-slate-600 dark:text-slate-400">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
               Nenhuma simulação salva.
             </p>
           ) : (
@@ -220,14 +223,24 @@ export default function App() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-4xl space-y-6 p-4 sm:p-6">
-      <header className="flex flex-col-reverse gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold">Comparador de Autocustódia</h1>
-          <p className="text-slate-600 dark:text-slate-400">
-            Descubra em qual corretora sai mais barato comprar bitcoin e sacar
-            pra sua própria carteira.
-          </p>
+    <main className="mx-auto min-h-screen max-w-4xl space-y-8 px-4 py-6 sm:px-6 sm:py-10">
+      <header className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <span
+            aria-hidden="true"
+            className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-lg bg-btc text-white"
+          >
+            <Bitcoin className="size-5" strokeWidth={2.25} />
+          </span>
+          <div className="space-y-1">
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+              Comparador de Autocustódia
+            </h1>
+            <p className="max-w-xl text-sm text-zinc-500 dark:text-zinc-400">
+              Descubra em qual corretora sai mais barato comprar bitcoin e sacar
+              pra sua própria carteira.
+            </p>
+          </div>
         </div>
         <BotaoTema />
       </header>
@@ -235,7 +248,7 @@ export default function App() {
       <div
         role="tablist"
         aria-label="Seções"
-        className="flex gap-2 border-b border-slate-200 dark:border-slate-700"
+        className="flex gap-6 border-b border-zinc-200 dark:border-zinc-800"
       >
         {ABAS.map(({ id, rotulo }) => (
           <button
@@ -244,7 +257,7 @@ export default function App() {
             role="tab"
             aria-selected={aba === id}
             onClick={() => trocarAba(id)}
-            className="-mb-px border-b-2 border-transparent px-4 py-2 font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 aria-selected:border-orange-600 aria-selected:text-orange-700 dark:aria-selected:text-orange-400"
+            className="-mb-px border-b-2 border-transparent pb-2.5 text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-900 aria-selected:border-btc aria-selected:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 dark:aria-selected:text-zinc-50"
           >
             {rotulo}
           </button>

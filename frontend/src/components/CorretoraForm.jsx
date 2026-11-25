@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import { botao, botaoPrimario, entrada, painel, rotulo } from "../ui";
 import { validarCorretora } from "../validation";
 import { Aviso } from "./Aviso";
 import { Campo } from "./Campo";
@@ -39,6 +40,7 @@ export function CorretoraForm({
   onSalvar,
   corretora,
   rotuloBotao = "Cadastrar corretora",
+  embutido = false,
   onCancelar,
 }) {
   // useId porque pode ter mais de um formulário na tela (cadastro + edição)
@@ -92,7 +94,7 @@ export function CorretoraForm({
       onSubmit={handleSubmit}
       noValidate
       aria-label={corretora ? `Editar ${corretora.nome}` : "Nova corretora"}
-      className="space-y-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm"
+      className={embutido ? "space-y-4" : `${painel} space-y-4 p-4 sm:p-5`}
     >
       <Campo rotulo="Nome" autoComplete="off" {...campo("nome")} />
 
@@ -123,21 +125,21 @@ export function CorretoraForm({
       </div>
 
       <div className="flex flex-wrap gap-x-6 gap-y-2">
-        <label className="flex items-center gap-2 text-sm font-medium">
+        <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
           <input
             type="checkbox"
             checked={form.suporta_lightning}
             onChange={alterar("suporta_lightning")}
-            className="size-4"
+            className="size-4 accent-zinc-900 dark:accent-zinc-100"
           />
           Saca pela Lightning
         </label>
-        <label className="flex items-center gap-2 text-sm font-medium">
+        <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
           <input
             type="checkbox"
             checked={form.ativa}
             onChange={alterar("ativa")}
-            className="size-4"
+            className="size-4 accent-zinc-900 dark:accent-zinc-100"
           />
           Ativa (entra nas simulações)
         </label>
@@ -152,10 +154,7 @@ export function CorretoraForm({
       )}
 
       <div className="space-y-1">
-        <label
-          htmlFor={`${id}-observacoes`}
-          className="block text-sm font-medium"
-        >
+        <label htmlFor={`${id}-observacoes`} className={rotulo}>
           Observações
         </label>
         <textarea
@@ -164,10 +163,10 @@ export function CorretoraForm({
           onChange={alterar("observacoes")}
           rows={2}
           aria-invalid={erros.observacoes ? "true" : "false"}
-          className="w-full rounded border border-slate-300 dark:border-slate-600 p-2 aria-[invalid=true]:border-red-600"
+          className={entrada}
         />
         {erros.observacoes && (
-          <p role="alert" className="text-sm text-red-700 dark:text-red-300">
+          <p role="alert" className="text-xs text-red-700 dark:text-red-400">
             {erros.observacoes}
           </p>
         )}
@@ -176,11 +175,7 @@ export function CorretoraForm({
       <Aviso>{erroApi}</Aviso>
 
       <div className="flex flex-col gap-2 sm:flex-row">
-        <button
-          type="submit"
-          disabled={salvando}
-          className="rounded bg-orange-600 px-4 py-2 font-medium text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <button type="submit" disabled={salvando} className={botaoPrimario}>
           {salvando ? "Salvando..." : rotuloBotao}
         </button>
         {onCancelar && (
@@ -188,7 +183,7 @@ export function CorretoraForm({
             type="button"
             onClick={onCancelar}
             disabled={salvando}
-            className="rounded border border-slate-300 dark:border-slate-600 px-4 py-2 font-medium hover:bg-slate-100 dark:hover:bg-slate-800"
+            className={`${botao} justify-center py-2`}
           >
             Cancelar
           </button>

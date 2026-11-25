@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 import { formatarDecimal, formatarHora, SIMBOLO_MOEDA } from "../format";
 import { obterCotacao } from "../services/cotacao";
+import { botao, botaoPrimario, entrada, painel, rotulo } from "../ui";
 import { validarSimulacao } from "../validation";
 import { Aviso } from "./Aviso";
 import { Campo } from "./Campo";
@@ -100,21 +101,35 @@ export function SimulacaoForm({ onSimular }) {
       onSubmit={handleSubmit}
       noValidate
       aria-label="Nova simulação"
-      className="space-y-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm"
+      className={`${painel} space-y-5 p-4 sm:p-5`}
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1 sm:col-span-2">
-          <label htmlFor={`${id}-moeda`} className="block text-sm font-medium">
+        <div className="space-y-1.5">
+          <label htmlFor={`${id}-moeda`} className={rotulo}>
             Moeda
           </label>
           <select
             id={`${id}-moeda`}
             value={form.moeda}
             onChange={trocarMoeda}
-            className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 sm:w-auto"
+            className={entrada}
           >
             <option value="BRL">Real (R$)</option>
             <option value="USD">Dólar (US$)</option>
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <label htmlFor={`${id}-rede`} className={rotulo}>
+            Rede do saque
+          </label>
+          <select
+            id={`${id}-rede`}
+            value={form.rede}
+            onChange={alterar("rede")}
+            className={entrada}
+          >
+            <option value="onchain">On-chain</option>
+            <option value="lightning">Lightning</option>
           </select>
         </div>
         <Campo
@@ -135,26 +150,12 @@ export function SimulacaoForm({ onSimular }) {
             type="button"
             onClick={usarCotacaoAtual}
             disabled={buscandoCotacao}
-            className="rounded border border-slate-300 dark:border-slate-600 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
+            className={botao}
           >
             {buscandoCotacao ? "Buscando cotação..." : "Usar cotação atual"}
           </button>
           <Aviso tipo="sucesso">{cotacaoInfo}</Aviso>
           <Aviso>{erroCotacao}</Aviso>
-        </div>
-        <div className="space-y-1">
-          <label htmlFor={`${id}-rede`} className="block text-sm font-medium">
-            Rede do saque
-          </label>
-          <select
-            id={`${id}-rede`}
-            value={form.rede}
-            onChange={alterar("rede")}
-            className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2"
-          >
-            <option value="onchain">On-chain</option>
-            <option value="lightning">Lightning</option>
-          </select>
         </div>
         <Campo
           rotulo="Compras por saque"
@@ -171,6 +172,7 @@ export function SimulacaoForm({ onSimular }) {
         <Campo
           rotulo="Descrição (opcional)"
           autoComplete="off"
+          className="sm:col-span-2"
           {...campo("descricao")}
         />
       </div>
@@ -180,7 +182,7 @@ export function SimulacaoForm({ onSimular }) {
       <button
         type="submit"
         disabled={simulando}
-        className="w-full rounded bg-orange-600 px-4 py-2 font-medium text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        className={`${botaoPrimario} w-full sm:w-auto`}
       >
         {simulando ? "Calculando..." : "Comparar corretoras"}
       </button>

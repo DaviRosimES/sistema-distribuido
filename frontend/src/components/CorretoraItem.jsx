@@ -1,6 +1,17 @@
+import { Pencil, Power, Trash2, Zap } from "lucide-react";
 import { useState } from "react";
 import { formatarPct, formatarSats } from "../format";
+import { botao, botaoPerigo, numeroMono } from "../ui";
 import { CorretoraForm } from "./CorretoraForm";
+
+function Taxa({ nome, children }) {
+  return (
+    <div>
+      <dt className="text-xs text-zinc-500 dark:text-zinc-400">{nome}</dt>
+      <dd className={`text-sm ${numeroMono}`}>{children}</dd>
+    </div>
+  );
+}
 
 export function CorretoraItem({
   corretora,
@@ -23,9 +34,10 @@ export function CorretoraItem({
 
   if (editando) {
     return (
-      <li>
+      <li className="p-4 sm:p-5">
         <CorretoraForm
           corretora={corretora}
+          embutido
           rotuloBotao="Salvar"
           onCancelar={() => setEditando(false)}
           onSalvar={async (valores) => {
@@ -39,54 +51,49 @@ export function CorretoraItem({
   }
 
   return (
-    <li
-      aria-label={corretora.nome}
-      className={`space-y-3 rounded-lg border bg-white dark:bg-slate-900 p-4 shadow-sm ${corretora.ativa ? "border-slate-200 dark:border-slate-700" : "border-dashed border-slate-300 dark:border-slate-600 opacity-75"}`}
-    >
+    <li aria-label={corretora.nome} className="space-y-3 p-4 sm:p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="font-semibold break-words">{corretora.nome}</h3>
-        {!corretora.ativa && (
-          <span className="rounded bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-xs">
-            Inativa
+        <h3
+          className={`font-semibold break-words ${corretora.ativa ? "" : "text-zinc-400 dark:text-zinc-500"}`}
+        >
+          {corretora.nome}
+        </h3>
+        {corretora.suporta_lightning && (
+          <span className="inline-flex items-center gap-1 rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
+            <Zap aria-hidden="true" className="size-3 text-btc" />
+            Lightning
           </span>
         )}
-        {corretora.suporta_lightning && (
-          <span className="rounded bg-yellow-100 dark:bg-yellow-900/40 px-2 py-0.5 text-xs text-yellow-800 dark:text-yellow-300">
-            ⚡ Lightning
+        {!corretora.ativa && (
+          <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+            Inativa
           </span>
         )}
       </div>
 
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
-        <div>
-          <dt className="text-slate-500 dark:text-slate-400">Negociação</dt>
-          <dd>{formatarPct(corretora.taxa_negociacao_pct)}</dd>
-        </div>
-        <div>
-          <dt className="text-slate-500 dark:text-slate-400">Spread</dt>
-          <dd>{formatarPct(corretora.spread_pct)}</dd>
-        </div>
-        <div>
-          <dt className="text-slate-500 dark:text-slate-400">Saque on-chain</dt>
-          <dd>{formatarSats(corretora.taxa_saque_onchain_sats)}</dd>
-        </div>
+      <dl
+        className={`grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-5 ${corretora.ativa ? "" : "opacity-60"}`}
+      >
+        <Taxa nome="Negociação">
+          {formatarPct(corretora.taxa_negociacao_pct)}
+        </Taxa>
+        <Taxa nome="Spread">{formatarPct(corretora.spread_pct)}</Taxa>
+        <Taxa nome="Saque on-chain">
+          {formatarSats(corretora.taxa_saque_onchain_sats)}
+        </Taxa>
         {corretora.suporta_lightning && (
-          <div>
-            <dt className="text-slate-500 dark:text-slate-400">
-              Saque Lightning
-            </dt>
-            <dd>{formatarSats(corretora.taxa_saque_lightning_sats)}</dd>
-          </div>
+          <Taxa nome="Saque Lightning">
+            {formatarSats(corretora.taxa_saque_lightning_sats)}
+          </Taxa>
         )}
         {corretora.saque_minimo_sats > 0 && (
-          <div>
-            <dt className="text-slate-500 dark:text-slate-400">Saque mínimo</dt>
-            <dd>{formatarSats(corretora.saque_minimo_sats)}</dd>
-          </div>
+          <Taxa nome="Saque mínimo">
+            {formatarSats(corretora.saque_minimo_sats)}
+          </Taxa>
         )}
       </dl>
       {corretora.observacoes && (
-        <p className="text-sm text-slate-600 dark:text-slate-400 break-words">
+        <p className="max-w-prose text-xs leading-relaxed text-zinc-500 break-words dark:text-zinc-400">
           {corretora.observacoes}
         </p>
       )}
@@ -96,24 +103,27 @@ export function CorretoraItem({
           type="button"
           onClick={() => setEditando(true)}
           disabled={ocupado}
-          className="rounded border border-slate-300 dark:border-slate-600 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
+          className={botao}
         >
+          <Pencil aria-hidden="true" className="size-3.5" />
           Editar
         </button>
         <button
           type="button"
           onClick={() => executar(() => onAlternarAtiva(corretora))}
           disabled={ocupado}
-          className="rounded border border-slate-300 dark:border-slate-600 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-60"
+          className={botao}
         >
+          <Power aria-hidden="true" className="size-3.5" />
           {corretora.ativa ? "Desativar" : "Ativar"}
         </button>
         <button
           type="button"
           onClick={() => executar(() => onRemover(corretora))}
           disabled={ocupado}
-          className="rounded border border-red-300 dark:border-red-800 px-3 py-1 text-sm text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40 disabled:opacity-60"
+          className={botaoPerigo}
         >
+          <Trash2 aria-hidden="true" className="size-3.5" />
           Remover
         </button>
       </div>

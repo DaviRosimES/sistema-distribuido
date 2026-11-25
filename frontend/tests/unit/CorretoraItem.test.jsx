@@ -37,7 +37,7 @@ describe("CorretoraItem", () => {
     expect(screen.getByText("0,5%")).toBeInTheDocument();
     expect(screen.getByText("20.000 sats")).toBeInTheDocument();
     expect(screen.getByText("10 sats")).toBeInTheDocument();
-    expect(screen.getByText("⚡ Lightning")).toBeInTheDocument();
+    expect(screen.getByText("Lightning")).toBeInTheDocument();
     expect(screen.getByText("Sem taxa de depósito")).toBeInTheDocument();
   });
 
