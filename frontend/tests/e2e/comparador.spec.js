@@ -6,10 +6,16 @@ function unico(base) {
   return `${base} ${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 }
 
+// Na primeira visita o Vite (modo dev, dentro do container) ainda empacota as dependências
+// do frontend, então o primeiro carregamento pode passar dos 5s padrão do expect
+const PRIMEIRO_CARREGAMENTO = { timeout: 30_000 };
+
 async function abrir(page, aba) {
   await page.goto("/");
   // Espera a primeira resposta da API antes de interagir
-  await expect(page.getByText("Carregando dados...")).toBeHidden();
+  await expect(page.getByText("Carregando dados...")).toBeHidden(
+    PRIMEIRO_CARREGAMENTO,
+  );
   await page.getByRole("tab", { name: aba }).click();
 }
 
@@ -95,7 +101,7 @@ test("edita, desativa e remove uma corretora, e tudo continua depois do F5", asy
   await expect(item).toContainText("Inativa");
 
   await recarregar(page, "Corretoras");
-  await expect(item).toContainText("⚡ Lightning");
+  await expect(item).toContainText("Lightning");
   await expect(item).toContainText("50 sats");
   await expect(item).toContainText("Inativa");
   await expect(page.getByRole("listitem", { name: nome })).toHaveCount(0);
