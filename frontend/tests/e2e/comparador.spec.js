@@ -149,6 +149,31 @@ test("simula, salva no histórico e edita e remove a simulação", async ({
   );
 });
 
+test("simula em dólar e o histórico mostra os valores em US$", async ({
+  page,
+}) => {
+  const corretora = unico("Em dólar");
+  const descricao = unico("Compra em dólar");
+  await abrir(page, "Corretoras");
+  await cadastrarCorretora(page, corretora);
+  await page.getByRole("tab", { name: "Simular" }).click();
+
+  // Mesmo cenário do teste em reais, convertido: o custo em % tem que ser o mesmo
+  await page.getByLabel("Moeda").selectOption("USD");
+  await page.getByLabel("Valor por compra (US$)").fill("200");
+  await page.getByLabel("Preço do BTC (US$)").fill("100.000");
+  await page.getByLabel("Descrição (opcional)").fill(descricao);
+  await page.getByRole("button", { name: "Comparar corretoras" }).click();
+
+  const simulacao = page.getByRole("listitem", { name: descricao });
+  const linha = simulacao.getByRole("row").filter({ hasText: corretora });
+  await expect(linha).toContainText("US$ 23,00");
+  await expect(linha).toContainText("11,5%");
+
+  await recarregar(page, "Simular");
+  await expect(simulacao).toContainText("US$ 200,00 por compra");
+});
+
 test("cabe numa tela de celular sem rolagem horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 740 });
   await abrir(page, "Corretoras");

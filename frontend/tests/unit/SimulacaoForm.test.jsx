@@ -25,6 +25,7 @@ describe("SimulacaoForm", () => {
 
     expect(onSimular).toHaveBeenCalledWith({
       descricao: null,
+      moeda: "BRL",
       valor: 250.5,
       preco_btc: 500000,
       rede: "lightning",
@@ -98,7 +99,10 @@ describe("SimulacaoForm buscando a cotação", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "Cotação da Binance às",
     );
-    expect(fetchMock).toHaveBeenCalledWith(`${API_URL}/cotacao`, undefined);
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${API_URL}/cotacao?moeda=BRL`,
+      undefined,
+    );
   });
 
   it("mostra o 503 da API e deixa o campo pra preencher à mão", async () => {
@@ -123,5 +127,49 @@ describe("SimulacaoForm buscando a cotação", () => {
     );
     expect(screen.getByLabelText("Preço do BTC (R$)")).toHaveValue("");
     expect(screen.getByLabelText("Preço do BTC (R$)")).toBeEnabled();
+  });
+});
+
+describe("SimulacaoForm em dólar", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("troca os rótulos, limpa o preço e busca a cotação em dólar", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      resposta(200, {
+        moeda: "USD",
+        preco_btc: 58348.8,
+        fonte: "Binance",
+        consultada_em: "2026-11-25T14:00:00Z",
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const onSimular = vi.fn().mockResolvedValue();
+    const user = userEvent.setup();
+    render(<SimulacaoForm onSimular={onSimular} />);
+    await user.type(screen.getByLabelText("Preço do BTC (R$)"), "344.000");
+
+    await user.selectOptions(screen.getByLabelText("Moeda"), "USD");
+
+    expect(screen.getByLabelText("Preço do BTC (US$)")).toHaveValue("");
+    await user.click(
+      screen.getByRole("button", { name: "Usar cotação atual" }),
+    );
+    expect(screen.getByLabelText("Preço do BTC (US$)")).toHaveValue(
+      "58.348,80",
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${API_URL}/cotacao?moeda=USD`,
+      undefined,
+    );
+
+    await user.type(screen.getByLabelText("Valor por compra (US$)"), "200");
+    await user.click(
+      screen.getByRole("button", { name: "Comparar corretoras" }),
+    );
+    expect(onSimular).toHaveBeenCalledWith(
+      expect.objectContaining({ moeda: "USD", valor: 200, preco_btc: 58348.8 }),
+    );
   });
 });

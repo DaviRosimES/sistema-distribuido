@@ -19,6 +19,7 @@ const CORRETORA = {
 
 const SIMULACAO = {
   descricao: "",
+  moeda: "BRL",
   valor: "1.000,00",
   preco_btc: "500000",
   rede: "onchain",
@@ -93,6 +94,7 @@ describe("validarSimulacao", () => {
     expect(erros).toEqual({});
     expect(valores).toEqual({
       descricao: null,
+      moeda: "BRL",
       valor: 1000,
       preco_btc: 500000,
       rede: "onchain",

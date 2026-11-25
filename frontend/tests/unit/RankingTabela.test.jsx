@@ -90,3 +90,21 @@ describe("RankingTabela", () => {
     expect(linhas()[0]).toHaveTextContent("Qualquer valor");
   });
 });
+
+describe("RankingTabela em dólar", () => {
+  it("mostra os valores em US$", () => {
+    render(
+      <RankingTabela
+        simulacao={simulacao({
+          moeda: "USD",
+          ranking: [itemRanking({ custo_total: 23, valor_minimo: 4000 })],
+        })}
+      />,
+    );
+
+    const [linha] = screen.getAllByRole("row").slice(1);
+    expect(linha).toHaveTextContent("US$ 23,00");
+    expect(linha).toHaveTextContent("US$ 4.000,00");
+    expect(linha).not.toHaveTextContent("R$");
+  });
+});

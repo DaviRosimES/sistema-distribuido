@@ -8,7 +8,7 @@ export const DESCRICAO_SIMULACAO_MAX_LENGTH = 100;
 const PERCENTUAL_MAX = 10;
 const SATS_MAX = 10_000_000;
 const SAQUE_MINIMO_MAX = 100_000_000;
-const REAIS_MAX = 100_000_000;
+const VALOR_MAX = 100_000_000;
 const COMPRAS_POR_SAQUE_MAX = 52;
 
 // Aceita o jeito brasileiro ("1.234,56" e "0,5") e o jeito do input ("1234.56").
@@ -120,16 +120,19 @@ export function validarSimulacao(form) {
         : [descricao || null, null],
     valor: numeroDecimal(form.valor, {
       min: 0,
-      max: REAIS_MAX,
+      max: VALOR_MAX,
       casas: 2,
       maiorQueMin: true,
     }),
     preco_btc: numeroDecimal(form.preco_btc, {
       min: 0,
-      max: REAIS_MAX,
+      max: VALOR_MAX,
       casas: 2,
       maiorQueMin: true,
     }),
+    moeda: ["BRL", "USD"].includes(form.moeda)
+      ? [form.moeda, null]
+      : [null, "Escolha a moeda."],
     rede: ["onchain", "lightning"].includes(form.rede)
       ? [form.rede, null]
       : [null, "Escolha a rede."],

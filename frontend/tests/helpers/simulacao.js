@@ -23,6 +23,7 @@ export function simulacao(alteracoes = {}) {
   return {
     id: 1,
     descricao: null,
+    moeda: "BRL",
     valor: 1000,
     preco_btc: 500000,
     rede: "onchain",

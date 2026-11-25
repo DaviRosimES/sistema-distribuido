@@ -1,12 +1,19 @@
 import { useId, useState } from "react";
-import { formatarDecimal, formatarHora } from "../format";
+import { formatarDecimal, formatarHora, SIMBOLO_MOEDA } from "../format";
 import { obterCotacao } from "../services/cotacao";
 import { validarSimulacao } from "../validation";
 import { Aviso } from "./Aviso";
 import { Campo } from "./Campo";
 
+// Exemplos de preenchimento na moeda escolhida
+const EXEMPLO = {
+  BRL: { valor: "1.000,00", preco_btc: "500.000,00" },
+  USD: { valor: "200,00", preco_btc: "100.000,00" },
+};
+
 const INICIAL = {
   descricao: "",
+  moeda: "BRL",
   valor: "",
   preco_btc: "",
   rede: "onchain",
@@ -29,6 +36,14 @@ export function SimulacaoForm({ onSimular }) {
       setForm((atual) => ({ ...atual, [campo]: event.target.value }));
   }
 
+  // O preço do BTC digitado (ou buscado) era na moeda anterior, então ele é limpo
+  function trocarMoeda(event) {
+    const moeda = event.target.value;
+    setForm((atual) => ({ ...atual, moeda, preco_btc: "" }));
+    setCotacaoInfo("");
+    setErroCotacao("");
+  }
+
   // Preenche o preço com a cotação que a API buscou. Se falhar, o campo continua
   // editável e a pessoa digita o preço à mão.
   async function usarCotacaoAtual() {
@@ -36,7 +51,7 @@ export function SimulacaoForm({ onSimular }) {
     setCotacaoInfo("");
     setErroCotacao("");
     try {
-      const cotacao = await obterCotacao();
+      const cotacao = await obterCotacao(form.moeda);
       setForm((atual) => ({
         ...atual,
         preco_btc: formatarDecimal(cotacao.preco_btc),
@@ -71,6 +86,8 @@ export function SimulacaoForm({ onSimular }) {
     }
   }
 
+  const simbolo = SIMBOLO_MOEDA[form.moeda];
+
   const campo = (nome) => ({
     id: `${id}-${nome}`,
     value: form[nome],
@@ -86,17 +103,31 @@ export function SimulacaoForm({ onSimular }) {
       className="space-y-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm"
     >
       <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1 sm:col-span-2">
+          <label htmlFor={`${id}-moeda`} className="block text-sm font-medium">
+            Moeda
+          </label>
+          <select
+            id={`${id}-moeda`}
+            value={form.moeda}
+            onChange={trocarMoeda}
+            className="w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 sm:w-auto"
+          >
+            <option value="BRL">Real (R$)</option>
+            <option value="USD">Dólar (US$)</option>
+          </select>
+        </div>
         <Campo
-          rotulo="Valor por compra (R$)"
+          rotulo={`Valor por compra (${simbolo})`}
           inputMode="decimal"
-          placeholder="1.000,00"
+          placeholder={EXEMPLO[form.moeda].valor}
           {...campo("valor")}
         />
         <div className="space-y-2">
           <Campo
-            rotulo="Preço do BTC (R$)"
+            rotulo={`Preço do BTC (${simbolo})`}
             inputMode="decimal"
-            placeholder="500.000,00"
+            placeholder={EXEMPLO[form.moeda].preco_btc}
             ajuda="Usado pra converter as taxas em sats"
             {...campo("preco_btc")}
           />

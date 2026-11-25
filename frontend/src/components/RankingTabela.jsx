@@ -1,17 +1,17 @@
-import { formatarPct, formatarReais, formatarSats } from "../format";
+import { formatarMoeda, formatarPct, formatarSats } from "../format";
 
 // null: só as taxas percentuais já passam do alvo. 0: sem taxa fixa nem saque mínimo,
 // então qualquer valor fica dentro do alvo.
-function textoValorMinimo(valor) {
+function textoValorMinimo(valor, moeda) {
   if (valor === null) return "Impossível";
   if (valor === 0) return "Qualquer valor";
-  return formatarReais(valor);
+  return formatarMoeda(valor, moeda);
 }
 
 // Tabela com o resultado de uma simulação. O ranking já vem ordenado da API:
 // viáveis da mais barata pra mais cara, inviáveis no fim com o motivo.
 export function RankingTabela({ simulacao }) {
-  const { ranking, compras_por_saque, custo_alvo_pct } = simulacao;
+  const { ranking, compras_por_saque, custo_alvo_pct, moeda } = simulacao;
   const juntaSaques = compras_por_saque > 1;
 
   return (
@@ -63,20 +63,20 @@ export function RankingTabela({ simulacao }) {
                   </td>
                   <td className="p-2 text-right">
                     <span className="font-semibold">
-                      {formatarReais(item.custo_total)}
+                      {formatarMoeda(item.custo_total, moeda)}
                     </span>
                     <span className="block text-xs">
                       {formatarPct(item.custo_pct)}
                     </span>
                   </td>
                   <td className="p-2 text-xs">
-                    Negociação {formatarReais(item.taxa_negociacao)} · Spread{" "}
-                    {formatarReais(item.spread)} · Saque{" "}
-                    {formatarReais(item.taxa_saque)}
+                    Negociação {formatarMoeda(item.taxa_negociacao, moeda)} ·
+                    Spread {formatarMoeda(item.spread, moeda)} · Saque{" "}
+                    {formatarMoeda(item.taxa_saque, moeda)}
                     {juntaSaques && item.economia > 0 && (
                       <span className="block text-green-700 dark:text-green-400">
-                        Economia de {formatarReais(item.economia)} juntando{" "}
-                        {compras_por_saque} compras por saque
+                        Economia de {formatarMoeda(item.economia, moeda)}{" "}
+                        juntando {compras_por_saque} compras por saque
                       </span>
                     )}
                   </td>
@@ -87,7 +87,7 @@ export function RankingTabela({ simulacao }) {
                 </td>
               )}
               <td className="p-2 text-right">
-                {textoValorMinimo(item.valor_minimo)}
+                {textoValorMinimo(item.valor_minimo, moeda)}
               </td>
             </tr>
           ))}

@@ -1,5 +1,5 @@
 import { useId, useState } from "react";
-import { formatarData, formatarPct, formatarReais } from "../format";
+import { formatarData, formatarMoeda, formatarPct } from "../format";
 import { DESCRICAO_SIMULACAO_MAX_LENGTH } from "../validation";
 import { Aviso } from "./Aviso";
 import { RankingTabela } from "./RankingTabela";
@@ -110,8 +110,8 @@ export function SimulacaoItem({
       )}
 
       <p className="text-sm">
-        {formatarReais(simulacao.valor)} por compra · BTC a{" "}
-        {formatarReais(simulacao.preco_btc)} · saque{" "}
+        {formatarMoeda(simulacao.valor, simulacao.moeda)} por compra · BTC a{" "}
+        {formatarMoeda(simulacao.preco_btc, simulacao.moeda)} · saque{" "}
         {NOME_DA_REDE[simulacao.rede]}
         {simulacao.compras_por_saque > 1 &&
           ` a cada ${simulacao.compras_por_saque} compras`}
@@ -120,8 +120,8 @@ export function SimulacaoItem({
         {melhor ? (
           <>
             Melhor opção: <strong>{melhor.corretora_nome}</strong> com custo de{" "}
-            {formatarReais(melhor.custo_total)} ({formatarPct(melhor.custo_pct)}
-            )
+            {formatarMoeda(melhor.custo_total, simulacao.moeda)} (
+            {formatarPct(melhor.custo_pct)})
           </>
         ) : (
           <strong className="text-red-700 dark:text-red-300">

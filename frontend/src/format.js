@@ -1,14 +1,17 @@
 // Formatação pt-BR dos números que vêm da API
 
-const reais = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
+// Uma formatação por moeda: em pt-BR o real sai "R$ 1.000,00" e o dólar "US$ 1.000,00"
+const dinheiro = {
+  BRL: new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }),
+  USD: new Intl.NumberFormat("pt-BR", { style: "currency", currency: "USD" }),
+};
+
+export const SIMBOLO_MOEDA = { BRL: "R$", USD: "US$" };
 const inteiro = new Intl.NumberFormat("pt-BR");
 const percentual = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 3 });
 
-export function formatarReais(valor) {
-  return reais.format(valor);
+export function formatarMoeda(valor, moeda = "BRL") {
+  return dinheiro[moeda].format(valor);
 }
 
 export function formatarSats(valor) {
