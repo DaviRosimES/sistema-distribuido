@@ -3,6 +3,7 @@ from decimal import Decimal
 
 import pytest
 
+from app.core.moeda import Moeda
 from app.services.cotacao_service import CotacaoIndisponivelError, CotacaoService
 from tests.unit.fakes import FonteFalsa
 
@@ -85,3 +86,16 @@ def test_erro_nao_fica_em_cache(relogio):
     fonte.preco = "343000"
 
     assert service.obter().preco_btc == Decimal(343000)
+
+
+def test_cada_moeda_tem_o_seu_cache(relogio):
+    fonte = FonteFalsa("A", "343000")
+    service = CotacaoService([fonte], agora=relogio)
+
+    reais = service.obter(Moeda.BRL)
+    dolares = service.obter(Moeda.USD)
+    service.obter(Moeda.BRL)
+
+    assert (reais.moeda, dolares.moeda) == (Moeda.BRL, Moeda.USD)
+    # A segunda consulta em reais veio do cache; a de dólar precisou ir na fonte
+    assert fonte.moedas == [Moeda.BRL, Moeda.USD]

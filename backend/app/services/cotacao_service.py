@@ -5,12 +5,14 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from app.clients.cotacao import FonteDeCotacao, FonteIndisponivelError
+from app.core.moeda import Moeda
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
 class Cotacao:
+    moeda: Moeda
     preco_btc: Decimal
     fonte: str
     consultada_em: datetime
@@ -41,19 +43,21 @@ class CotacaoService:
         self.fontes = fontes
         self.validade = timedelta(seconds=cache_segundos)
         self.agora = agora
-        self._ultima: Cotacao | None = None
+        # Uma cotação guardada por moeda
+        self._cache: dict[Moeda, Cotacao] = {}
 
-    def obter(self) -> Cotacao:
-        if self._ultima is not None and self.agora() - self._ultima.consultada_em < self.validade:
-            return self._ultima
+    def obter(self, moeda: Moeda = Moeda.BRL) -> Cotacao:
+        guardada = self._cache.get(moeda)
+        if guardada is not None and self.agora() - guardada.consultada_em < self.validade:
+            return guardada
 
         for fonte in self.fontes:
             try:
-                preco = fonte.buscar()
+                preco = fonte.buscar(moeda)
             except FonteIndisponivelError as erro:
-                logger.warning("Cotação indisponível em %s: %s", fonte.nome, erro)
+                logger.warning("Cotação em %s indisponível em %s: %s", moeda, fonte.nome, erro)
                 continue
-            self._ultima = Cotacao(preco, fonte.nome, self.agora())
-            return self._ultima
+            self._cache[moeda] = Cotacao(moeda, preco, fonte.nome, self.agora())
+            return self._cache[moeda]
 
         raise CotacaoIndisponivelError()

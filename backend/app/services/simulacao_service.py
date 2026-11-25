@@ -7,7 +7,14 @@ from app.schemas.simulacao import ItemRanking, SimulacaoCreate, SimulacaoPatch
 from app.services.calculadora import Rede, ranquear
 
 # Mudar qualquer um desses campos muda o resultado, então o ranking precisa ser refeito
-CAMPOS_DO_CALCULO = {"valor", "preco_btc", "rede", "compras_por_saque", "custo_alvo_pct"}
+CAMPOS_DO_CALCULO = {
+    "moeda",
+    "valor",
+    "preco_btc",
+    "rede",
+    "compras_por_saque",
+    "custo_alvo_pct",
+}
 
 
 class SimulacaoNaoEncontradaError(Exception):

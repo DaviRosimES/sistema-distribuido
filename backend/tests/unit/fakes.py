@@ -68,9 +68,11 @@ class FonteFalsa:
         self.nome = nome
         self.preco = preco
         self.chamadas = 0
+        self.moedas = []
 
-    def buscar(self):
+    def buscar(self, moeda):
         self.chamadas += 1
+        self.moedas.append(moeda)
         if self.preco is None:
             raise FonteIndisponivelError("fora do ar")
         return Decimal(self.preco)

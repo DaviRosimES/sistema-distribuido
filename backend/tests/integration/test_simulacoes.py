@@ -111,3 +111,36 @@ def test_ranking_compara_varias_corretoras(client, corretora):
     corpo = client.post("/simulacoes", json=PEDIDO).json()
 
     assert [item["corretora_nome"] for item in corpo["ranking"]] == ["Barata", "Corretora A"]
+
+
+def test_simulacao_em_dolar_tem_o_mesmo_custo_percentual(client, corretora):
+    # Mesmo cenário convertido pra dólar com o BTC a US$ 100.000 (R$ 5 por US$ 1):
+    # o custo em % não depende da moeda, só os valores mudam
+    corpo = client.post(
+        "/simulacoes", json={"moeda": "USD", "valor": 200, "preco_btc": 100000}
+    ).json()
+
+    item = corpo["ranking"][0]
+    assert corpo["moeda"] == "USD"
+    assert item["custo_total"] == 23.0
+    assert item["custo_pct"] == 11.5
+    assert item["sats_recebidos"] == 177_000
+
+
+def test_simulacao_sem_moeda_e_em_reais(client, simulacao):
+    assert simulacao["moeda"] == "BRL"
+
+
+@pytest.mark.parametrize("moeda", ["EUR", "usd", None])
+def test_moeda_invalida_responde_422(client, corretora, moeda):
+    assert client.post("/simulacoes", json={**PEDIDO, "moeda": moeda}).status_code == 422
+
+
+def test_patch_trocando_a_moeda_recalcula(client, simulacao):
+    response = client.patch(
+        f"/simulacoes/{simulacao['id']}",
+        json={"moeda": "USD", "valor": 200, "preco_btc": 100000},
+    )
+
+    assert response.json()["moeda"] == "USD"
+    assert response.json()["ranking"][0]["custo_total"] == 23.0

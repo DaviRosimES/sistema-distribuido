@@ -1,4 +1,4 @@
-"""Fontes públicas da cotação do BTC em reais.
+"""Fontes públicas da cotação do BTC em reais ou em dólares.
 
 Nenhuma delas precisa de chave de API, então o projeto roda pra qualquer pessoa sem segredo
 nenhum. Cada fonte sabe só fazer a chamada HTTP e ler o JSON da resposta; qual usar, a ordem
@@ -10,6 +10,8 @@ from typing import Protocol
 
 import httpx
 
+from app.core.moeda import Moeda
+
 
 class FonteIndisponivelError(Exception):
     pass
@@ -18,7 +20,7 @@ class FonteIndisponivelError(Exception):
 class FonteDeCotacao(Protocol):
     nome: str
 
-    def buscar(self) -> Decimal: ...
+    def buscar(self, moeda: Moeda) -> Decimal: ...
 
 
 def _get_json(cliente: httpx.Client, url: str, params: dict[str, str]):
@@ -42,15 +44,17 @@ def _preco(valor) -> Decimal:
 
 
 class Binance:
-    # Último preço negociado no par BTC/BRL do livro de ofertas da Binance
+    # Último preço negociado no livro de ofertas da Binance. Pro dólar uso o par BTC/USDT,
+    # o mais negociado da Binance (o USDT é uma stablecoin que acompanha o dólar 1:1).
     nome = "Binance"
     url = "https://api.binance.com/api/v3/ticker/price"
+    pares = {Moeda.BRL: "BTCBRL", Moeda.USD: "BTCUSDT"}
 
     def __init__(self, cliente: httpx.Client):
         self.cliente = cliente
 
-    def buscar(self) -> Decimal:
-        dados = _get_json(self.cliente, self.url, {"symbol": "BTCBRL"})
+    def buscar(self, moeda: Moeda) -> Decimal:
+        dados = _get_json(self.cliente, self.url, {"symbol": self.pares[moeda]})
         try:
             return _preco(dados["price"])
         except (KeyError, TypeError) as erro:
@@ -65,9 +69,10 @@ class CoinGecko:
     def __init__(self, cliente: httpx.Client):
         self.cliente = cliente
 
-    def buscar(self) -> Decimal:
-        dados = _get_json(self.cliente, self.url, {"ids": "bitcoin", "vs_currencies": "brl"})
+    def buscar(self, moeda: Moeda) -> Decimal:
+        codigo = moeda.lower()
+        dados = _get_json(self.cliente, self.url, {"ids": "bitcoin", "vs_currencies": codigo})
         try:
-            return _preco(dados["bitcoin"]["brl"])
+            return _preco(dados["bitcoin"][codigo])
         except (KeyError, TypeError) as erro:
             raise FonteIndisponivelError(f"resposta inesperada: {dados!r}") from erro

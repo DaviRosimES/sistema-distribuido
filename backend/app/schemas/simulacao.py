@@ -4,6 +4,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, computed_field, field_validator
 
+from app.core.moeda import Moeda
 from app.services.calculadora import Rede
 
 # No JSON os valores em Decimal saem como número (o padrão do Pydantic seria string)
@@ -19,6 +20,8 @@ ComprasPorSaque = Annotated[int, Field(ge=1, le=52)]
 
 class SimulacaoCreate(BaseModel):
     descricao: str | None = Field(default=None, max_length=100)
+    # Valor da compra e preço do BTC na mesma moeda; o ranking sai nela também
+    moeda: Moeda = Moeda.BRL
     valor: Valor
     preco_btc: PrecoBtc
     rede: Rede = Rede.ONCHAIN
@@ -29,6 +32,7 @@ class SimulacaoCreate(BaseModel):
 # O PATCH aceita trocar a descrição ou os parâmetros; mudando parâmetro, o ranking é recalculado
 class SimulacaoPatch(BaseModel):
     descricao: str | None = Field(default=None, max_length=100)
+    moeda: Moeda | None = None
     valor: Valor | None = None
     preco_btc: PrecoBtc | None = None
     rede: Rede | None = None
@@ -36,7 +40,7 @@ class SimulacaoPatch(BaseModel):
     custo_alvo_pct: AlvoPct | None = None
 
     # A descrição pode ser null (pra apagar), os parâmetros do cálculo não
-    @field_validator("valor", "preco_btc", "rede", "compras_por_saque", "custo_alvo_pct")
+    @field_validator("moeda", "valor", "preco_btc", "rede", "compras_por_saque", "custo_alvo_pct")
     @classmethod
     def nao_aceita_nulo(cls, valor):
         if valor is None:

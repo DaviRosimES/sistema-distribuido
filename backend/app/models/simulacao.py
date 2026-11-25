@@ -17,6 +17,8 @@ class SimulacaoModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     descricao: Mapped[str | None] = mapped_column(String(100))
+    # BRL ou USD: o valor, o preço do BTC e todo o ranking ficam nessa moeda
+    moeda: Mapped[str] = mapped_column(String(3), server_default="BRL")
     valor: Mapped[Decimal] = mapped_column(Numeric(14, 2))
     preco_btc: Mapped[Decimal] = mapped_column(Numeric(14, 2))
     rede: Mapped[str] = mapped_column(String(10))

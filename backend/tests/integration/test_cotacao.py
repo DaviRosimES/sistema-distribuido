@@ -29,6 +29,7 @@ def test_get_cotacao_devolve_preco_fonte_e_horario(client, com_fontes):
 
     assert response.status_code == 200
     assert response.json() == {
+        "moeda": "BRL",
         "preco_btc": 343635.12,
         "fonte": "Binance",
         "consultada_em": "2026-11-25T12:00:00Z",
@@ -48,3 +49,20 @@ def test_get_cotacao_responde_503_quando_nenhuma_fonte_responde(client, com_font
 
     assert response.status_code == 503
     assert "Informe o preço do BTC manualmente" in response.json()["detail"]
+
+
+def test_get_cotacao_em_dolar(client, com_fontes):
+    fonte = FonteFalsa("Binance", "58348.80")
+    com_fontes(fonte)
+
+    response = client.get("/cotacao", params={"moeda": "USD"})
+
+    assert response.json()["moeda"] == "USD"
+    assert response.json()["preco_btc"] == 58348.8
+    assert fonte.moedas == ["USD"]
+
+
+def test_get_cotacao_com_moeda_invalida_responde_422(client, com_fontes):
+    com_fontes(FonteFalsa("Binance", "1"))
+
+    assert client.get("/cotacao", params={"moeda": "EUR"}).status_code == 422
