@@ -39,7 +39,7 @@ db-migration: ## Gera uma migration a partir dos modelos (uso: make db-migration
 	@test -n "$(msg)" || (echo 'Informe a descrição: make db-migration msg="descricao"' && exit 1)
 	cd $(BACKEND_DIR) && $(POETRY) run alembic revision --autogenerate -m "$(msg)"
 
-seed: ## Cadastra as corretoras de exemplo no banco local (pode rodar mais de uma vez)
+seed: ## Cadastra Binance, Bitso e Foxbit no banco local (pode rodar mais de uma vez)
 	cd $(BACKEND_DIR) && $(POETRY) run python -m app.seed
 
 db-current: ## Mostra a migration atual do banco
@@ -63,10 +63,10 @@ docker-logs: ## Acompanha os logs de todos os serviços em tempo real
 docker-ps: ## Lista o status dos containers do projeto
 	$(DOCKER_COMPOSE) ps
 
-docker-seed: ## Cadastra as corretoras de exemplo no banco do Docker Compose
+docker-seed: ## Cadastra Binance, Bitso e Foxbit no banco do Docker Compose
 	$(DOCKER_COMPOSE) exec backend python -m app.seed
 
-docker-restart: ## Reinicia o serviço do backend (down + up)
+docker-restart: ## Reinicia só o container do backend (docker compose restart backend)
 	$(DOCKER_COMPOSE) restart backend
 
 help: ## Lista os comandos disponíveis
