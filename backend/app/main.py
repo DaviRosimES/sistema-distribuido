@@ -5,7 +5,7 @@ from app.api.routes import corretoras, health, simulacoes
 from app.core.config import CORS_ORIGINS
 
 # O main.py só cria a aplicação e registra os routers, a lógica fica nas outras camadas
-app = FastAPI(title="Sistema Distribuído")
+app = FastAPI(title="Comparador de Autocustódia")
 
 # O frontend roda em outra porta (outra origem), então o navegador só deixa ele ler as
 # respostas da API se ela liberar essa origem
