@@ -1,3 +1,4 @@
+from app.models.corretora import CorretoraModel
 from app.models.tarefa import TarefaModel
 
 
@@ -28,3 +29,35 @@ class FakeTarefaRepository:
 
     def remover(self, tarefa: TarefaModel) -> None:
         del self.tarefas[tarefa.id]
+
+
+class FakeCorretoraRepository:
+    # Mesma ideia do fake de tarefas: guarda as corretoras num dicionário em memória
+    def __init__(self):
+        self.corretoras: dict[int, CorretoraModel] = {}
+        self._proximo_id = 1
+
+    def listar(self, ativa: bool | None = None) -> list[CorretoraModel]:
+        corretoras = sorted(self.corretoras.values(), key=lambda corretora: corretora.nome)
+        if ativa is None:
+            return corretoras
+        return [corretora for corretora in corretoras if corretora.ativa == ativa]
+
+    def buscar(self, corretora_id: int) -> CorretoraModel | None:
+        return self.corretoras.get(corretora_id)
+
+    def buscar_por_nome(self, nome: str) -> CorretoraModel | None:
+        return next(
+            (c for c in self.corretoras.values() if c.nome.lower() == nome.lower()),
+            None,
+        )
+
+    def salvar(self, corretora: CorretoraModel) -> CorretoraModel:
+        if corretora.id is None:
+            corretora.id = self._proximo_id
+            self._proximo_id += 1
+        self.corretoras[corretora.id] = corretora
+        return corretora
+
+    def remover(self, corretora: CorretoraModel) -> None:
+        del self.corretoras[corretora.id]
