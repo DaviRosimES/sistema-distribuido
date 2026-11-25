@@ -6,7 +6,7 @@ HOST := 0.0.0.0
 PORT := 8000
 DOCKER_COMPOSE := docker compose
 
-.PHONY: install run test test-unit test-integration lint format db-upgrade db-downgrade db-migration db-current db-history docker-build docker-up docker-down docker-logs docker-ps docker-restart help
+.PHONY: install run test test-unit test-integration lint format db-upgrade db-downgrade db-migration seed db-current db-history docker-build docker-up docker-down docker-logs docker-ps docker-seed docker-restart help
 
 install: ## Instala as dependências do backend com o Poetry
 	cd $(BACKEND_DIR) && $(POETRY) install
@@ -39,6 +39,9 @@ db-migration: ## Gera uma migration a partir dos modelos (uso: make db-migration
 	@test -n "$(msg)" || (echo 'Informe a descrição: make db-migration msg="descricao"' && exit 1)
 	cd $(BACKEND_DIR) && $(POETRY) run alembic revision --autogenerate -m "$(msg)"
 
+seed: ## Cadastra as corretoras de exemplo no banco local (pode rodar mais de uma vez)
+	cd $(BACKEND_DIR) && $(POETRY) run python -m app.seed
+
 db-current: ## Mostra a migration atual do banco
 	cd $(BACKEND_DIR) && $(POETRY) run alembic current
 
@@ -59,6 +62,9 @@ docker-logs: ## Acompanha os logs de todos os serviços em tempo real
 
 docker-ps: ## Lista o status dos containers do projeto
 	$(DOCKER_COMPOSE) ps
+
+docker-seed: ## Cadastra as corretoras de exemplo no banco do Docker Compose
+	$(DOCKER_COMPOSE) exec backend python -m app.seed
 
 docker-restart: ## Reinicia o serviço do backend (down + up)
 	$(DOCKER_COMPOSE) restart backend
