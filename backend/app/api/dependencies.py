@@ -4,7 +4,9 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
+from app.repositories.corretora_repository import CorretoraRepository
 from app.repositories.tarefa_repository import TarefaRepository
+from app.services.corretora_service import CorretoraService
 from app.services.tarefa_service import TarefaService
 
 
@@ -18,3 +20,13 @@ def get_tarefa_service(
     repository: Annotated[TarefaRepository, Depends(get_tarefa_repository)],
 ) -> TarefaService:
     return TarefaService(repository)
+
+
+def get_corretora_repository(db: Annotated[Session, Depends(get_db)]) -> CorretoraRepository:
+    return CorretoraRepository(db)
+
+
+def get_corretora_service(
+    repository: Annotated[CorretoraRepository, Depends(get_corretora_repository)],
+) -> CorretoraService:
+    return CorretoraService(repository)

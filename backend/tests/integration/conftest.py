@@ -63,3 +63,16 @@ def client(db_session):
 def tarefa(client):
     response = client.post("/tarefas", json={"titulo": "Estudar", "descricao": "Prática 4"})
     return response.json()
+
+
+CORRETORA_VALIDA = {
+    "nome": "Corretora A",
+    "taxa_negociacao_pct": 0.5,
+    "spread_pct": 1,
+    "taxa_saque_onchain_sats": 20_000,
+}
+
+
+@pytest.fixture
+def corretora(client):
+    return client.post("/corretoras", json=CORRETORA_VALIDA).json()
