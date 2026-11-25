@@ -31,6 +31,9 @@ dev = [
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+# O TestClient do FastAPI ainda usa o httpx e o Starlette avisa que isso vai mudar.
+# É um aviso da biblioteca, não do nosso código, então não precisa aparecer em todo teste.
+filterwarnings = ["ignore::starlette.exceptions.StarletteDeprecationWarning"]
 
 [tool.ruff]
 line-length = 100
