@@ -43,7 +43,7 @@ export function RankingTabela({ simulacao }) {
               <th scope="row" className="p-2 font-medium">
                 {item.corretora_nome}
                 {posicao === 0 && item.viavel && (
-                  <span className="ml-2 rounded bg-green-600 px-1.5 py-0.5 text-xs text-white">
+                  <span className="ml-2 inline-block rounded bg-green-600 px-1.5 py-0.5 text-xs whitespace-nowrap text-white">
                     Mais barata
                   </span>
                 )}
