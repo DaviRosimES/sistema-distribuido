@@ -2,22 +2,10 @@ import pytest
 
 from app.services.corretora_service import CorretoraService
 from app.services.simulacao_service import SimulacaoService
-from app.services.tarefa_service import TarefaService
 from tests.unit.fakes import (
     FakeCorretoraRepository,
     FakeSimulacaoRepository,
-    FakeTarefaRepository,
 )
-
-
-@pytest.fixture
-def repository():
-    return FakeTarefaRepository()
-
-
-@pytest.fixture
-def service(repository):
-    return TarefaService(repository)
 
 
 @pytest.fixture

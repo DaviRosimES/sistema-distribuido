@@ -7,7 +7,7 @@ ORIGEM_DO_FRONT = "http://localhost:5173"
 def test_preflight_libera_a_origem_do_frontend(client, metodo):
     # O navegador manda esse OPTIONS antes de qualquer requisição com JSON pra outra origem
     response = client.options(
-        "/tarefas",
+        "/corretoras",
         headers={
             "Origin": ORIGEM_DO_FRONT,
             "Access-Control-Request-Method": metodo,
@@ -21,7 +21,7 @@ def test_preflight_libera_a_origem_do_frontend(client, metodo):
 
 
 def test_resposta_traz_o_cabecalho_para_a_origem_do_frontend(client):
-    response = client.get("/tarefas", headers={"Origin": ORIGEM_DO_FRONT})
+    response = client.get("/corretoras", headers={"Origin": ORIGEM_DO_FRONT})
 
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == ORIGEM_DO_FRONT
@@ -29,7 +29,7 @@ def test_resposta_traz_o_cabecalho_para_a_origem_do_frontend(client):
 
 def test_origem_desconhecida_nao_e_liberada(client):
     response = client.options(
-        "/tarefas",
+        "/corretoras",
         headers={
             "Origin": "http://site-qualquer.com",
             "Access-Control-Request-Method": "POST",
@@ -42,7 +42,7 @@ def test_origem_desconhecida_nao_e_liberada(client):
 
 def test_requisicao_sem_origin_continua_funcionando(client):
     # curl e outros servidores não mandam Origin, e o CORS não muda nada pra eles
-    response = client.get("/tarefas")
+    response = client.get("/corretoras")
 
     assert response.status_code == 200
     assert "access-control-allow-origin" not in response.headers

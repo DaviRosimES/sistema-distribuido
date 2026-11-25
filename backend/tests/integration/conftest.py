@@ -9,7 +9,6 @@ from sqlalchemy.pool import StaticPool
 from app.database.base import Base
 from app.database.session import get_db
 from app.main import app
-from app.repositories.tarefa_repository import TarefaRepository
 
 # Sem TEST_DATABASE_URL os testes usam SQLite em memória, assim o make test roda
 # sem precisar subir o Postgres.
@@ -45,11 +44,6 @@ def db_session(engine):
 
 
 @pytest.fixture
-def repository(db_session):
-    return TarefaRepository(db_session)
-
-
-@pytest.fixture
 def client(db_session):
     app.dependency_overrides[get_db] = lambda: db_session
 
@@ -57,12 +51,6 @@ def client(db_session):
     yield TestClient(app)
 
     app.dependency_overrides.clear()
-
-
-@pytest.fixture
-def tarefa(client):
-    response = client.post("/tarefas", json={"titulo": "Estudar", "descricao": "Prática 4"})
-    return response.json()
 
 
 CORRETORA_VALIDA = {
