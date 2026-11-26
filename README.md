@@ -2,6 +2,8 @@
 
 Projeto Final de C216 — Sistemas Distribuídos (Inatel, 2026.2).
 
+**Vídeo de demonstração:** [assistir no Google Drive](https://drive.google.com/file/d/1mynqTGQ3QxZkumRIL3eMSigV9cGtFTN8/view?usp=drive_link) (cerca de 10 min)
+
 ## Objetivo e tema
 
 Quem compra bitcoin pra guardar na própria carteira (autocustódia) paga três custos na
