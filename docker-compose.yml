@@ -1,0 +1,87 @@
+services:
+  # Roda as migrations uma vez e termina. O backend só sobe depois que ele terminar com sucesso,
+  # assim a API nunca começa com o banco desatualizado.
+  migrate:
+    build:
+      context: ./backend
+    command: ["poetry", "run", "alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-sistema_distribuido}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-sistema_distribuido}
+      # Só o endereço do frontend pode chamar a API pelo navegador
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:${FRONTEND_PORT:-5173},http://127.0.0.1:${FRONTEND_PORT:-5173}}
+      # A API busca a cotação do BTC na internet (Binance, com reserva no CoinGecko)
+      COTACAO_TIMEOUT_SEGUNDOS: ${COTACAO_TIMEOUT_SEGUNDOS:-5}
+      COTACAO_CACHE_SEGUNDOS: ${COTACAO_CACHE_SEGUNDOS:-60}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    # A imagem slim não tem curl, então o healthcheck usa o próprio Python pra chamar o GET /
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    environment:
+      # O React roda no navegador, não no container, então a API é acessada pela porta
+      # publicada no host (localhost), e não pelo nome do serviço "backend"
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:${BACKEND_PORT:-8000}}
+    depends_on:
+      backend:
+        condition: service_healthy
+    # 127.0.0.1 em vez de localhost: no Alpine o localhost resolve primeiro pro IPv6 (::1)
+    # e o Vite com --host 0.0.0.0 só escuta em IPv4
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:5173/"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-sistema_distribuido}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+volumes:
+  db-data:
+
+networks:
+  app-network:
+    driver: bridge

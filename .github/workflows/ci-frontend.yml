@@ -1,0 +1,71 @@
+name: CI Frontend
+
+# O E2E sobe a stack inteira, então mudanças no backend, no compose e no Makefile
+# também podem quebrar o frontend e disparam este workflow
+on:
+  push:
+    paths:
+      - "frontend/**"
+      - "backend/**"
+      - "docker-compose.yml"
+      - "Makefile"
+      - ".github/workflows/ci-frontend.yml"
+  pull_request:
+    paths:
+      - "frontend/**"
+      - "backend/**"
+      - "docker-compose.yml"
+      - "Makefile"
+      - ".github/workflows/ci-frontend.yml"
+
+jobs:
+  frontend:
+    name: Biome, Vitest, Build e E2E full-stack
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configura o Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instala as dependências
+        run: npm ci
+
+      - name: Verifica o lint
+        run: npm run lint
+
+      - name: Verifica a formatação
+        run: npm run format:check
+
+      - name: Executa os testes unitários e de integração
+        run: npm run test
+
+      - name: Gera o build
+        run: npm run build
+
+      - name: Instala o Chromium do Playwright
+        run: npx playwright install --with-deps chromium
+
+      # Sobe db, api e frontend num projeto separado do Compose, roda o Playwright e derruba tudo
+      - name: Executa os testes E2E full-stack
+        working-directory: .
+        run: make e2e
+
+      # Se o E2E quebrar, o relatório (com o trace do retry) fica disponível pra baixar no run
+      - name: Envia o relatório do Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7

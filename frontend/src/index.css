@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* O modo escuro é ligado pela classe "dark" no <html> (e não só pela preferência do sistema),
+   assim o botão do cabeçalho consegue trocar o tema. Ver src/tema.js. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Fontes empacotadas pelo npm (@fontsource), sem depender de CDN */
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Laranja do Bitcoin: usado pouco, só onde tem significado (1º lugar, taxa de saque) */
+  --color-btc: #f7931a;
+  --color-btc-texto: #b45309;
+}
+
+/* Avisa o navegador do tema, pra barra de rolagem e os controles nativos (select,
+   checkbox) também ficarem escuros */
+html.dark {
+  color-scheme: dark;
+}
